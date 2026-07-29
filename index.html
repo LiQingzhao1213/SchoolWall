@@ -670,7 +670,7 @@
       const liked = localStorage.getItem('wall_liked_posts');
       return liked ? JSON.parse(liked) : [];
     }
-          async function addComment(postId) {
+        async function addComment(postId) {
       const input = document.getElementById(`commentInput_${postId}`);
       let content = input.value.trim();
       if (!content) return;
