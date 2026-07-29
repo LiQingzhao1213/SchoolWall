@@ -3,157 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>校园表白墙 💕</title>
+  <title>校园社区 💬</title>
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* ==================== 1. 全局基础样式 ==================== */
+    /* 全局 iOS 苹果极简设计语言 */
     * { 
       box-sizing: border-box; 
       margin: 0; 
       padding: 0; 
       -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
     }
-    
+
     body { 
-      background-color: #fce4ec; 
-      /* 弥散柔光渐变背景 */
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(255, 182, 193, 0.7) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(221, 160, 221, 0.6) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(255, 192, 203, 0.8) 0px, transparent 50%),
-        radial-gradient(at 0% 100%, rgba(230, 230, 250, 0.7) 0px, transparent 50%);
+      background: linear-gradient(145deg, #e0eafc, #cfdef3, #eef2f3);
       background-attachment: fixed;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
-      padding: 16px; 
-      padding-bottom: 90px; 
-      color: #2c3e50; 
+      padding: 12px; 
+      padding-bottom: 110px; 
+      color: #1c1c1e; 
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* 自定义滚动条 */
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255, 71, 126, 0.3); border-radius: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
+    /* 🌟 开场动画 */
+    #splashScreen {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: splashFadeOut 0.6s ease 1.2s forwards;
+    }
 
-    /* ==================== 2. 顶栏：液态玻璃样式 ==================== */
+    .splash-logo {
+      font-size: 52px;
+      margin-bottom: 12px;
+      animation: logoPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .splash-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1c1c1e;
+      letter-spacing: 2px;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes logoPop {
+      0% { opacity: 0; transform: scale(0.5); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes splashFadeOut {
+      0% { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 🌟 删除了图标、文字居中的搜索框 */
     header { 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      padding: 12px 18px; 
       position: sticky; 
-      top: 12px; 
-      z-index: 100; 
+      top: 10px; 
+      z-index: 90; 
+      margin-bottom: 16px;
+    }
+
+    .search-bar-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(255, 105, 180, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 20px;
+      padding: 10px 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
     }
 
-    .user-profile { 
-      display: flex; 
-      align-items: center; 
-      gap: 10px; 
-      background: rgba(255, 255, 255, 0.7); 
-      padding: 6px 14px 6px 6px; 
-      border-radius: 20px; 
-      cursor: pointer; 
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      transition: all 0.25s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .user-profile:active { transform: scale(0.96); }
-
-    .user-avatar { 
-      width: 32px; 
-      height: 32px; 
-      background: linear-gradient(135deg, #ff758c, #ff477e); 
-      color: #fff; 
-      border-radius: 50%; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 14px; 
-      font-weight: bold; 
-      box-shadow: 0 3px 8px rgba(255, 71, 126, 0.3);
-    }
-    .user-name-text { 
-      font-size: 13px; 
-      font-weight: 600; 
-      color: #4a4a4a; 
-      max-width: 90px; 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-      white-space: nowrap; 
+    .search-bar-box input {
+      border: none;
+      background: transparent;
+      width: 100%;
+      font-size: 14px;
+      outline: none;
+      color: #1c1c1e;
+      text-align: center; /* 文字居中 */
     }
 
-    .header-title { 
-      font-size: 18px; 
-      background: linear-gradient(135deg, #ff477e, #e056fd);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 800; 
-      letter-spacing: 0.5px; 
+    .search-bar-box input::placeholder {
+      text-align: center; /* 提示词居中 */
+      color: #8e8e93;
     }
 
-    .chat-nav-btn { 
-      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,240,245,0.9)); 
-      border: 1px solid rgba(255, 71, 126, 0.3); 
-      color: #ff477e; 
-      padding: 8px 16px; 
-      border-radius: 20px; 
-      font-size: 12px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      box-shadow: 0 4px 12px rgba(255, 71, 126, 0.15);
-      transition: all 0.25s ease;
-    }
-    .chat-nav-btn:active { transform: scale(0.95); }
-
-    /* ==================== 3. 悬浮发帖玻璃按钮 (FAB) ==================== */
-    .fab-btn { 
-      position: fixed; 
-      bottom: 28px; 
-      right: 22px; 
-      background: linear-gradient(135deg, #ff758c, #ff477e); 
-      color: #fff; 
-      width: 60px; 
-      height: 60px; 
-      border-radius: 50%; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 28px; 
-      box-shadow: 0 10px 25px rgba(255, 71, 126, 0.45); 
-      border: 2px solid rgba(255, 255, 255, 0.6); 
-      cursor: pointer; 
-      z-index: 99; 
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .fab-btn:active { transform: scale(0.9) rotate(90deg); }
-
-    .wall-title { 
-      font-size: 15px; 
-      margin: 20px 0 14px 6px; 
-      color: #7d6e83; 
-      font-weight: 700; 
-      letter-spacing: 0.5px;
-    }
-
-    /* ==================== 4. 表白卡片 (液态拟态玻璃) ==================== */
+    /* 🌟 毛玻璃 帖子卡片 */
     .post-card { 
-      background: rgba(255, 255, 255, 0.6); 
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 20px; 
-      border-radius: 20px; 
-      border: 1px solid rgba(255, 255, 255, 0.85);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8); 
-      margin-bottom: 18px; 
-      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 16px; 
+      border-radius: 22px; 
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); 
+      margin-bottom: 16px; 
+      animation: fadeInUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+    }
+
+    .post-card.pinned {
+      border: 1.5px solid rgba(0, 122, 255, 0.5);
+      background: rgba(255, 255, 255, 0.75);
+      box-shadow: 0 10px 30px rgba(0, 122, 255, 0.08);
+    }
+
+    .pin-badge {
+      font-size: 10px;
+      background: #007aff;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-right: 4px;
+      font-weight: 600;
     }
 
     .post-header { 
@@ -162,711 +142,660 @@
       align-items: center;
       margin-bottom: 12px; 
     }
-    .post-author { 
-      color: #8e8e93; 
-      font-size: 12px; 
-      cursor: pointer; 
-      font-weight: 600; 
-      background: rgba(255, 255, 255, 0.5);
-      padding: 4px 8px;
+    
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .user-avatar-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e5e5ea;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      transition: transform 0.2s;
+    }
+    .user-avatar-img:active { transform: scale(0.92); }
+
+    .post-author-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .admin-tag {
+      font-size: 10px;
+      background: linear-gradient(135deg, #ff2d55, #ff3b30);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(255, 45, 85, 0.25);
+    }
+
+    .post-time { font-size: 11px; color: #8e8e93; margin-top: 2px; }
+
+    /* 极简精简版右上角操作胶囊按钮 */
+    .mini-action-group {
+      display: flex;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 3px;
+      border-radius: 12px;
+    }
+
+    .mini-btn {
+      border: none;
+      background: transparent;
+      padding: 3px 6px;
       border-radius: 8px;
+      font-size: 11px;
+      cursor: pointer;
       transition: background 0.2s;
     }
-    .post-author:hover { background: rgba(255, 255, 255, 0.9); }
-    .post-target { 
-      font-weight: 800; 
-      color: #ff477e; 
-      font-size: 15px; 
-      background: rgba(255, 240, 245, 0.8);
-      padding: 4px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 71, 126, 0.15);
-    }
+    .mini-btn:active { background: rgba(0, 0, 0, 0.1); }
+    .mini-btn.active-pin { color: #007aff; font-weight: 700; }
 
     .post-content { 
       font-size: 15px; 
-      line-height: 1.6; 
-      margin-bottom: 16px; 
-      word-break: break-all; 
-      color: #333; 
-      font-weight: 400;
+      line-height: 1.5; 
+      margin-bottom: 12px; 
+      word-break: break-word; 
+      color: #1c1c1e; 
+    }
+
+    .post-image {
+      width: 100%;
+      max-height: 280px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 12px;
     }
 
     .post-footer { 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      border-bottom: 1px dashed rgba(0, 0, 0, 0.08); 
-      padding-bottom: 12px; 
+      border-top: 0.5px solid rgba(0, 0, 0, 0.06); 
+      padding-top: 10px; 
     }
-    .action-btn { 
-      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,240,245,0.8)); 
-      border: 1px solid rgba(255, 71, 126, 0.25); 
-      color: #ff477e; 
-      padding: 6px 14px; 
-      border-radius: 20px; 
-      font-size: 12px; 
-      font-weight: 700;
-      cursor: pointer; 
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(255, 71, 126, 0.1);
-    }
-    .action-btn:active { transform: scale(0.92); }
 
-    /* ==================== 5. 评论区样式 ==================== */
-    .comments-section { 
-      margin-top: 14px; 
-      background: rgba(255, 255, 255, 0.45); 
-      padding: 12px 14px; 
+    .action-group { display: flex; gap: 8px; }
+
+    .action-btn { 
+      background: rgba(0, 0, 0, 0.04); 
+      border: none;
+      color: #007aff; 
+      padding: 6px 12px; 
       border-radius: 14px; 
-      border: 1px solid rgba(255, 255, 255, 0.6); 
+      font-size: 12px; 
+      font-weight: 500;
+      cursor: pointer; 
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .action-btn:active { transform: scale(0.95); }
+    .action-btn.liked { background: rgba(255, 59, 48, 0.12); color: #ff3b30; font-weight: 600; }
+
+    /* 评论区样式 */
+    .comments-section { 
+      margin-top: 12px; 
+      background: rgba(255, 255, 255, 0.4); 
+      padding: 10px; 
+      border-radius: 14px; 
     }
     .comment-item { 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      font-size: 12px; 
-      color: #4a4a4a; 
+      font-size: 13px; 
       padding: 6px 0; 
-      border-bottom: 1px solid rgba(0,0,0,0.03); 
-      word-break: break-all; 
+      line-height: 1.4;
+      border-bottom: 0.5px dashed rgba(0, 0, 0, 0.08);
     }
     .comment-item:last-child { border-bottom: none; }
-    .comment-author { font-weight: 700; color: #e056fd; cursor: pointer; }
-    .reply-btn { 
-      color: #ff477e; 
-      font-size: 11px; 
-      cursor: pointer; 
-      border: none; 
-      background: rgba(255, 255, 255, 0.8); 
-      padding: 3px 8px;
-      border-radius: 6px;
-      flex-shrink: 0; 
-      margin-left: 8px; 
-      font-weight: 700; 
+    .comment-author { font-weight: 600; color: #007aff; cursor: pointer; }
+
+    .comment-input-group { display: flex; gap: 6px; margin-top: 8px; }
+    .comment-input { flex: 1; background: rgba(255, 255, 255, 0.8); border: 0.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 6px 10px; font-size: 13px; outline: none; }
+    .comment-btn { background: #007aff; color: #fff; border: none; padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    /* 底部 iOS 液态玻璃 Dock 栏 */
+    .glass-dock-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 32px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      padding: 0 10px;
     }
 
-    .comment-input-group { display: flex; gap: 8px; margin-top: 10px; }
-    .comment-input { 
-      flex: 1; 
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.9); 
-      border-radius: 10px; 
-      padding: 8px 12px; 
-      font-size: 12px; 
-      outline: none; 
-      transition: all 0.2s ease;
+    .dock-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      height: 100%;
+      color: #8e8e93;
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: none;
+      background: transparent;
     }
-    .comment-input:focus { border-color: #ff477e; background: #fff; }
-    .comment-btn { 
-      background: #ff477e; 
-      color: #fff; 
-      border: none; 
-      padding: 6px 14px; 
-      border-radius: 10px; 
-      font-size: 12px; 
-      cursor: pointer; 
-      font-weight: 700; 
-      box-shadow: 0 3px 8px rgba(255, 71, 126, 0.3);
-    }
+    .dock-item .dock-icon { font-size: 20px; margin-bottom: 2px; }
+    .dock-item.active { color: #007aff; font-weight: 600; }
 
-    /* ==================== 6. 弹窗与表单样式 ==================== */
-    .modal { 
-      display: none; 
+    /* 悬浮发帖按钮 */
+    .fab-btn { 
       position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%; 
-      background: rgba(0, 0, 0, 0.25); 
-      backdrop-filter: blur(8px); 
-      -webkit-backdrop-filter: blur(8px); 
-      z-index: 200; 
-      justify-content: center; 
+      bottom: 96px; 
+      right: 20px; 
+      background: linear-gradient(135deg, #007aff, #0051a8); 
+      color: #fff; 
+      width: 52px; 
+      height: 52px; 
+      border-radius: 26px; 
+      display: flex; 
       align-items: center; 
+      justify-content: center; 
+      font-size: 20px; 
+      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.38); 
+      border: none; 
+      cursor: pointer; 
+      z-index: 999; 
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .fab-btn:active { transform: scale(0.88); }
+
+    /* 通讯界面与个人中心 */
+    #chatPage, #profilePage { display: none; }
+    #profilePage { background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); border-radius: 22px; padding: 20px; }
+
+    .chat-user-item {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(15px);
+      padding: 12px 14px;
+      border-radius: 16px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    #activeChatRoom {
+      display: none;
+      flex-direction: column;
+      height: calc(100vh - 160px);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 12px;
+    }
+
+    .chat-box { flex: 1; overflow-y: auto; background: rgba(240, 240, 245, 0.5); border-radius: 14px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 12px; }
+    .msg-row { display: flex; flex-direction: column; max-width: 80%; }
+    .msg-row.other { align-self: flex-start; }
+    .msg-row.me { align-self: flex-end; align-items: flex-end; }
+    .msg-bubble { padding: 9px 13px; border-radius: 16px; font-size: 14px; word-break: break-word; }
+    .msg-row.other .msg-bubble { background: #fff; color: #000; }
+    .msg-row.me .msg-bubble { background: #007aff; color: #fff; }
+
+    /* Modal 弹窗 */
+    .modal { 
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
+      z-index: 2000; justify-content: center; align-items: center; 
     }
     .modal-content { 
-      background: rgba(255, 255, 255, 0.85); 
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.95);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-      width: 90%; 
-      max-width: 400px; 
-      border-radius: 24px; 
-      padding: 24px; 
-      position: relative; 
-      max-height: 85vh; 
-      overflow-y: auto; 
+      background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); 
+      width: 88%; max-width: 360px; border-radius: 22px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
     }
-    .modal-header { 
-      font-size: 17px; 
-      font-weight: 800; 
-      color: #ff477e; 
-      margin-bottom: 16px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-    }
-    .close-btn { background: none; border: none; font-size: 22px; color: #aaa; cursor: pointer; }
-
-    .input-box { 
-      width: 100%; 
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.9); 
-      border-radius: 12px; 
-      padding: 12px 14px; 
-      font-size: 14px; 
-      margin-bottom: 14px; 
-      outline: none; 
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-      transition: border 0.2s;
-    }
-    .input-box:focus { border-color: #ff477e; }
-    textarea.input-box { height: 100px; resize: none; }
-
-    .btn-submit { 
-      width: 100%; 
-      background: linear-gradient(135deg, #ff758c, #ff477e); 
-      color: white; 
-      border: none; 
-      padding: 12px; 
-      border-radius: 12px; 
-      font-size: 15px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      box-shadow: 0 6px 16px rgba(255, 71, 126, 0.35); 
-    }
-        /* ==================== 7. 微信风聊天对话框样式 ==================== */
-    .chat-box { 
-      height: 280px; 
-      overflow-y: auto; 
-      background: rgba(245, 245, 245, 0.7); 
-      border: 1px solid rgba(255, 255, 255, 0.8); 
-      border-radius: 16px; 
-      padding: 12px; 
-      margin-bottom: 12px; 
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .msg-row {
-      display: flex;
-      flex-direction: column;
-      max-width: 80%;
-    }
-
-    /* 对方发送的消息（靠左） */
-    .msg-row.other {
-      align-self: flex-start;
-      align-items: flex-start;
-    }
-
-    /* 我发送的消息（靠右） */
-    .msg-row.me {
-      align-self: flex-end;
-      align-items: flex-end;
-    }
-
-    .msg-sender-name {
-      font-size: 10px;
-      color: #999;
-      margin-bottom: 3px;
-      padding: 0 4px;
-    }
-
-    .msg-bubble {
-      padding: 8px 12px;
-      border-radius: 14px;
-      font-size: 13px;
-      line-height: 1.4;
-      word-break: break-word;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
-    }
-
-    /* 对方气泡样式（左侧：白色） */
-    .msg-row.other .msg-bubble {
-      background: #ffffff;
-      color: #333;
-      border-top-left-radius: 2px;
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-
-    /* 自己气泡样式（右侧：粉色渐变/微信绿风） */
-    .msg-row.me .msg-bubble {
-      background: linear-gradient(135deg, #ff758c, #ff477e);
-      color: #ffffff;
-      border-top-right-radius: 2px;
-    }
-
-    /* Tab 选项卡 */
-    .tab-bar { display: flex; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 16px; }
-    .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 13px; color: #777; cursor: pointer; font-weight: 600; }
-    .tab-item.active { color: #ff477e; font-weight: 800; border-bottom: 2px solid #ff477e; }
-
-    .request-card { 
-      background: rgba(255,255,255,0.7); 
-      padding: 12px; 
-      border-radius: 12px; 
-      margin-bottom: 10px; 
-      font-size: 13px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      border: 1px solid rgba(255,255,255,0.8); 
-    }
-    .sm-btn { padding: 5px 12px; border-radius: 8px; border: none; font-size: 11px; cursor: pointer; font-weight: 700; }
-    .sm-btn-accept { background: #2ed573; color: #fff; }
-    .sm-btn-reject { background: #ff4757; color: #fff; margin-left: 6px; }
-
-    .chat-box { 
-      height: 220px; 
-      overflow-y: auto; 
-      background: rgba(255,255,255,0.6); 
-      border: 1px solid rgba(255,255,255,0.8); 
-      border-radius: 12px; 
-      padding: 12px; 
-      margin-bottom: 12px; 
-      font-size: 13px; 
-    }
-    .msg-item { margin-bottom: 10px; line-height: 1.4; }
-    .msg-item.me { text-align: right; color: #ff477e; font-weight: 600; }
+    .input-box { width: 100%; background: rgba(0, 0, 0, 0.05); border: none; border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-bottom: 12px; outline: none; }
+    .btn-submit { width: 100%; background: #007aff; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .profile-avatar-lg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #007aff; }
   </style>
 </head>
 <body>
 
-  <!-- 顶部玻璃导航栏 -->
-  <header>
-    <div class="user-profile" onclick="changeUsername()" title="点击修改名字">
-      <div class="user-avatar" id="avatarDisplay">👤</div>
-      <span class="user-name-text" id="usernameDisplay">设置名字</span>
+  <!-- 开场动画 -->
+  <div id="splashScreen">
+    <div class="splash-logo">💬</div>
+    <div class="splash-title">校园社区</div>
+  </div>
+
+  <!-- 🌟 删除了图标且文字居中的搜索框 -->
+  <header id="forumSearchBar">
+    <div class="search-bar-box">
+      <input type="text" id="searchInput" placeholder="搜索帖子内容或作者..." oninput="onSearchInput()">
     </div>
-    <div class="header-title">💌 宿州二中表白墙</div>
-    <button class="chat-nav-btn" onclick="openChatModal()">💬 私信</button>
   </header>
 
-  <!-- 列表区 -->
-  <div class="wall-title">✨ 最新表白</div>
-  <div id="postsContainer">加载中...</div>
+  <!-- 1. 论坛主页 -->
+  <div id="forumPage">
+    <div id="postsContainer">加载中...</div>
+  </div>
 
-  <!-- 悬浮发帖按钮 -->
-  <button class="fab-btn" onclick="openPublishModal()" title="发布表白">✏️</button>
+  <!-- 2. 私信/通讯界面 -->
+  <div id="chatPage">
+    <div id="chatListView">
+      <div style="display:flex; gap:6px; margin-bottom:12px;">
+        <input type="number" id="searchUidInput" class="input-box" style="margin:0; font-size:12px; padding:9px;" placeholder="输入对方 6 位 UID 精确查找">
+        <button class="action-btn" onclick="searchUserByUid()" style="white-space:nowrap; padding:0 14px;">查找并私信</button>
+      </div>
+      <div style="font-size:12px; font-weight:600; color:#8e8e93; margin-bottom:8px;">联系人列表</div>
+      <div id="chatFriendsContainer">加载联系人中...</div>
+    </div>
 
-  <!-- 1. 发表白弹窗 -->
+    <div id="activeChatRoom">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:0.5px solid rgba(0,0,0,0.1); margin-bottom:10px;">
+        <button class="action-btn" onclick="closeChatRoom()">‹ 返回列表</button>
+        <div id="chatTargetName" style="font-weight:700;">--</div>
+        <div style="width:60px;"></div>
+      </div>
+      <div class="chat-box" id="chatHistory"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="chatInput" class="input-box" style="margin-bottom:0;" placeholder="发送私信内容...">
+        <button class="btn-submit" style="width:72px; padding:0;" onclick="sendChatMessage()">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 个人中心 -->
+  <div id="profilePage">
+    <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;">
+      <img id="myAvatarDisplay" class="profile-avatar-lg" src="" onerror="handleAvatarError(this)">
+      <div id="myNameDisplay" style="font-size:18px; font-weight:700;">--</div>
+      <div style="font-size:13px; color:#007aff; font-weight:600;">UID: <span id="myUidDisplay">------</span></div>
+      <div id="myBioDisplay" style="font-size:13px; color:#8e8e93;">暂无简介...</div>
+      
+      <div>
+        <span id="adminStatusTag" class="admin-tag" style="display:none;">开发者/管理员</span>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="action-btn" onclick="openEditProfileModal()">✏️ 编辑资料</button>
+        <button class="action-btn" style="color:#ff3b30;" onclick="logout()">🚪 退出</button>
+      </div>
+    </div>
+    <hr style="margin: 16px 0; border: none; border-top: 0.5px solid rgba(0,0,0,0.1);">
+    <h4 style="font-size:13px; color:#8e8e93; margin-bottom:10px;">我的动态列表</h4>
+    <div id="myPostsContainer">加载中...</div>
+  </div>
+
+  <!-- 发帖悬浮按钮 -->
+  <button class="fab-btn" onclick="openPublishModal()">✏️</button>
+
+  <!-- 底部 iOS 液态玻璃 Dock 栏 -->
+  <nav class="glass-dock-bar">
+    <button class="dock-item active" id="dockForum" onclick="switchMainTab('forum')">
+      <span class="dock-icon">💬</span>
+      <span>论坛</span>
+    </button>
+    <button class="dock-item" id="dockChat" onclick="switchMainTab('chat')">
+      <span class="dock-icon">✈️</span>
+      <span>通讯</span>
+    </button>
+    <button class="dock-item" id="dockProfile" onclick="switchMainTab('profile')">
+      <span class="dock-icon">👤</span>
+      <span>我的</span>
+    </button>
+  </nav>
+
+  <!-- 🌟 新增：查看他人个人资料弹窗 -->
+  <div id="userProfileModal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+      <div style="display:flex; justify-content:flex-end;">
+        <span onclick="closeUserProfileModal()" style="cursor:pointer; color:#8e8e93; font-size:18px;">✕</span>
+      </div>
+      <img id="targetUserAvatar" class="profile-avatar-lg" style="margin-top:-10px;" src="" onerror="handleAvatarError(this)">
+      <div id="targetUserName" style="font-size:18px; font-weight:700; margin-top:8px;">--</div>
+      <div style="font-size:12px; color:#007aff; font-weight:600; margin:4px 0;">UID: <span id="targetUserUid">------</span></div>
+      <div id="targetUserBio" style="font-size:13px; color:#8e8e93; margin-bottom:16px;">暂无简介...</div>
+      
+      <button id="startChatBtn" class="btn-submit">💬 发起私信</button>
+    </div>
+  </div>
+
+  <!-- 登录 Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:12px;">欢迎进入社区</h3>
+      <input type="number" id="loginQQInput" class="input-box" placeholder="输入 QQ 号 (自动提取头像)">
+      <input type="text" id="loginNameInput" class="input-box" placeholder="输入用户昵称">
+      <button class="btn-submit" onclick="performLogin()">登录进入</button>
+    </div>
+  </div>
+
+  <!-- 发帖 Modal -->
   <div id="publishModal" class="modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <span>写表白 💕</span>
-        <button class="close-btn" onclick="closePublishModal()">×</button>
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
+        <span>发布动态</span>
+        <span onclick="closePublishModal()" style="cursor:pointer; color:#8e8e93;">✕</span>
       </div>
-      <input type="text" id="targetInput" class="input-box" placeholder="TO: 想表白的对象">
-      <textarea id="contentInput" class="input-box" placeholder="写下你的心动留言..."></textarea>
-      <button class="btn-submit" onclick="addPost()">发送表白</button>
+      <textarea id="contentInput" class="input-box" style="height:80px;" placeholder="这一刻的想法..."></textarea>
+      <input type="file" id="imageFileInput" accept="image/*" onchange="handleFileSelect(event)" style="margin-bottom:12px; font-size:12px;">
+      <button class="btn-submit" onclick="submitPost()">发布</button>
     </div>
   </div>
 
-  <!-- 2. 私信中心弹窗 -->
-  <div id="chatModal" class="modal">
+  <!-- 编辑资料 Modal -->
+  <div id="editProfileModal" class="modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <span>私信中心 💬</span>
-        <button class="close-btn" onclick="closeChatModal()">×</button>
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
+        <span>编辑个人资料</span>
+        <span onclick="closeEditProfileModal()" style="cursor:pointer; color:#8e8e93;">✕</span>
       </div>
-      <div class="tab-bar">
-        <div class="tab-item active" id="tabRequests" onclick="switchTab('requests')">私信申请</div>
-        <div class="tab-item" id="tabMessages" onclick="switchTab('messages')">我的聊天</div>
-      </div>
-      
-      <!-- 申请列表板块 -->
-      <div id="requestsPanel">
-        <div id="requestsList" style="font-size:12px; color:#888;">加载中...</div>
-      </div>
-
-      <!-- 聊天对话板块 -->
-      <div id="messagesPanel" style="display:none;">
-        <select id="friendSelect" class="input-box" onchange="loadChatHistory()"></select>
-        <div class="chat-box" id="chatHistory">请选择聊天对象</div>
-        <div style="display:flex; gap:6px;">
-          <input type="text" id="chatInput" class="comment-input" placeholder="输入私信内容...">
-          <button class="comment-btn" onclick="sendChatMessage()">发送</button>
-        </div>
-      </div>
+      <input type="text" id="editNameInput" class="input-box" placeholder="修改昵称">
+      <input type="number" id="editQQInput" class="input-box" placeholder="更新 QQ 号提取头像">
+      <textarea id="editBioInput" class="input-box" placeholder="个性签名..."></textarea>
+      <button class="btn-submit" onclick="saveProfile()">保存设置</button>
     </div>
   </div>
-    <script>
-    // 1. 初始化 Supabase
+
+  <script>
+    const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%20%23e5e5ea'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%20%238e8e93'/%3E%3Cpath d='M20,85 C20,65 33,56 50,56 C67,56 80,65 80,85 Z' fill='%20%238e8e93'/%3E%3C/svg%3E";
+
     const SUPABASE_URL = 'https://nbldkyyqmnjeiwybihqy.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibGRreXlxbW5qZWl3eWJpaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODY0NDIsImV4cCI6MjEwMDg2MjQ0Mn0.UOwl033Ame7kMoo3aHqm44BW4IG4qHmtKDvh6DptPVs'; // ⚠️ 替换为你的真实 Key
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibGRreXlxbW5qZWl3eWJpaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODY0NDIsImV4cCI6MjEwMDg2MjQ0Mn0.UOwl033Ame7kMoo3aHqm44BW4IG4qHmtKDvh6DptPVs';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 2. 敏感词过滤与防 XSS
-    const BAD_WORDS = ['草', '干', '傻逼', '垃圾', '死', '色情', '打架', '作弊'];
-    function filterBadWords(text) {
-      let filteredText = text || '';
-      BAD_WORDS.forEach(word => {
-        const reg = new RegExp(word, 'gi');
-        filteredText = filteredText.replace(reg, '***');
-      });
-      return filteredText;
+    let myLikedPostsMap = JSON.parse(localStorage.getItem('forum_liked_posts') || '{}');
+
+    let localUid = localStorage.getItem('forum_user_uid') || '846193';
+    let isDev = String(localUid) === '846193';
+
+    let currentUser = {
+      uid: localUid,
+      qq: localStorage.getItem('forum_user_qq') || '',
+      name: localStorage.getItem('forum_username') || '',
+      avatar: localStorage.getItem('forum_user_avatar') || DEFAULT_AVATAR,
+      bio: localStorage.getItem('forum_user_bio') || '开发者管理员',
+      isAdmin: isDev || (localStorage.getItem('forum_is_admin') === 'true'),
+      isBanned: false
+    };
+
+    let selectedBase64Image = null; 
+    let allPostsData = [];
+    let allCommentsData = [];
+    let userProfilesMap = new Map(); 
+    let activeChatFriendName = null;
+
+    function handleAvatarError(imgObj) {
+      imgObj.onerror = null;
+      imgObj.src = DEFAULT_AVATAR;
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-    }
-
-    // 3. 用户身份设置
-    let currentUser = localStorage.getItem('wall_username');
-
-    function initUser() {
-      if (!currentUser) {
-        let name = prompt('欢迎来到表白墙！请设置你的专属昵称：', '');
-        if (name && name.trim()) {
-          currentUser = filterBadWords(name.trim());
-        } else {
-          currentUser = '热心同学' + Math.floor(Math.random() * 899 + 100);
-        }
-        localStorage.setItem('wall_username', currentUser);
-      }
-      updateUserUI();
-    }
-
-    function updateUserUI() {
-      document.getElementById('usernameDisplay').innerText = currentUser;
-      document.getElementById('avatarDisplay').innerText = currentUser.charAt(0).toUpperCase();
-    }
-
-    function changeUsername() {
-      let newName = prompt('修改你的昵称：', currentUser);
-      if (newName && newName.trim()) {
-        currentUser = filterBadWords(newName.trim());
-        localStorage.setItem('wall_username', currentUser);
-        updateUserUI();
-        alert('修改成功！');
+    function checkLoginStatus() {
+      if (!currentUser.name) {
+        document.getElementById('loginModal').style.display = 'flex';
+      } else {
+        document.getElementById('loginModal').style.display = 'none';
+        syncUserProfileToDb();
+        updateProfileUI();
         fetchPosts();
       }
     }
 
-    // 4. 弹窗控制
+    async function syncUserProfileToDb() {
+      await _supabase.from('profiles').upsert([{
+        uid: currentUser.uid,
+        username: currentUser.name,
+        avatar: currentUser.avatar,
+        bio: currentUser.bio,
+        is_admin: currentUser.isAdmin,
+        is_banned: currentUser.isBanned
+      }], { onConflict: 'uid' });
+    }
+
+    function performLogin() {
+      const qq = document.getElementById('loginQQInput').value.trim();
+      const name = document.getElementById('loginNameInput').value.trim();
+      if (!name) { alert('请输入昵称！'); return; }
+
+      currentUser.name = name;
+      currentUser.qq = qq;
+      currentUser.avatar = (qq.length >= 5) ? `https://q1.qlogo.cn/g?b=qq&nk=${qq}&s=640` : DEFAULT_AVATAR;
+
+      saveUserDataToLocal();
+      document.getElementById('loginModal').style.display = 'none';
+      syncUserProfileToDb();
+      updateProfileUI();
+      fetchPosts();
+    }
+
+    function logout() {
+      if (confirm('确定退出当前账号吗？')) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    function saveUserDataToLocal() {
+      localStorage.setItem('forum_user_uid', currentUser.uid);
+      localStorage.setItem('forum_username', currentUser.name);
+      localStorage.setItem('forum_user_qq', currentUser.qq);
+      localStorage.setItem('forum_user_avatar', currentUser.avatar);
+      localStorage.setItem('forum_user_bio', currentUser.bio);
+      localStorage.setItem('forum_is_admin', currentUser.isAdmin);
+      localStorage.setItem('forum_liked_posts', JSON.stringify(myLikedPostsMap));
+    }
+
+    function updateProfileUI() {
+      document.getElementById('myNameDisplay').innerText = currentUser.name;
+      document.getElementById('myUidDisplay').innerText = currentUser.uid;
+      document.getElementById('myAvatarDisplay').src = currentUser.avatar;
+      document.getElementById('myBioDisplay').innerText = currentUser.bio;
+      document.getElementById('adminStatusTag').style.display = currentUser.isAdmin ? 'inline-block' : 'none';
+    }
+
+    function switchMainTab(tab) {
+      document.getElementById('forumPage').style.display = tab === 'forum' ? 'block' : 'none';
+      document.getElementById('chatPage').style.display = tab === 'chat' ? 'block' : 'none';
+      document.getElementById('profilePage').style.display = tab === 'profile' ? 'block' : 'none';
+      document.getElementById('forumSearchBar').style.display = tab === 'forum' ? 'block' : 'none';
+
+      document.getElementById('dockForum').classList.toggle('active', tab === 'forum');
+      document.getElementById('dockChat').classList.toggle('active', tab === 'chat');
+      document.getElementById('dockProfile').classList.toggle('active', tab === 'profile');
+
+      if (tab === 'forum') fetchPosts();
+      if (tab === 'chat') renderChatFriendList();
+      if (tab === 'profile') fetchMyPosts();
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) { selectedBase64Image = e.target.result; };
+        reader.readAsDataURL(file);
+      }
+    }
+
     function openPublishModal() { document.getElementById('publishModal').style.display = 'flex'; }
     function closePublishModal() { document.getElementById('publishModal').style.display = 'none'; }
 
-    function openChatModal() { 
-      document.getElementById('chatModal').style.display = 'flex'; 
-      loadRequests();
-    }
-    function closeChatModal() { document.getElementById('chatModal').style.display = 'none'; }
-
-    function switchTab(tab) {
-      if (tab === 'requests') {
-        document.getElementById('tabRequests').classList.add('active');
-        document.getElementById('tabMessages').classList.remove('active');
-        document.getElementById('requestsPanel').style.display = 'block';
-        document.getElementById('messagesPanel').style.display = 'none';
-        loadRequests();
-      } else {
-        document.getElementById('tabMessages').classList.add('active');
-        document.getElementById('tabRequests').classList.remove('active');
-        document.getElementById('messagesPanel').style.display = 'block';
-        document.getElementById('requestsPanel').style.display = 'none';
-        loadFriends();
-      }
-    }
-
-    // 5. 私信逻辑
-    async function applyChat(targetUser) {
-      if (targetUser === currentUser) {
-        alert('不能给自己发私信哦！');
-        return;
-      }
-      if (!confirm(`确定要向「${targetUser}」发起私信申请吗？`)) return;
-
-      const { error } = await _supabase.from('chat_requests').insert([{
-        from_user: currentUser,
-        to_user: targetUser,
-        status: 'pending'
-      }]);
-
-      if (error) {
-        alert('申请发送失败: ' + error.message);
-      } else {
-        alert('申请已发送，等待对方同意！');
-      }
-    }
-
-    async function loadRequests() {
-      const listEl = document.getElementById('requestsList');
-      const { data, error } = await _supabase.from('chat_requests')
-        .select('*')
-        .eq('to_user', currentUser)
-        .eq('status', 'pending');
-
-      if (error || !data || data.length === 0) {
-        listEl.innerHTML = '暂无未处理的私信申请';
-        return;
-      }
-
-      listEl.innerHTML = data.map(req => `
-        <div class="request-card">
-          <span><strong>${escapeHtml(req.from_user)}</strong> 请求私信</span>
-          <div>
-            <button class="sm-btn sm-btn-accept" onclick="handleRequest(${req.id}, 'accepted')">同意</button>
-            <button class="sm-btn sm-btn-reject" onclick="handleRequest(${req.id}, 'rejected')">拒绝</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function handleRequest(id, newStatus) {
-      await _supabase.from('chat_requests').update({ status: newStatus }).eq('id', id);
-      loadRequests();
-    }
-
-    async function loadFriends() {
-      const { data } = await _supabase.from('chat_requests')
-        .select('*')
-        .or(`and(from_user.eq.${currentUser},status.eq.accepted),and(to_user.eq.${currentUser},status.eq.accepted)`);
-
-      const select = document.getElementById('friendSelect');
-      select.innerHTML = '<option value="">选择聊天对象...</option>';
-
-      if (data) {
-        data.forEach(item => {
-          const friend = item.from_user === currentUser ? item.to_user : item.from_user;
-          select.innerHTML += `<option value="${friend}">${friend}</option>`;
-        });
-      }
-    }
-
-        async function loadChatHistory() {
-      const friend = document.getElementById('friendSelect').value;
-      const historyBox = document.getElementById('chatHistory');
-      if (!friend) { historyBox.innerHTML = '<div style="text-align:center; color:#aaa; font-size:12px; padding-top:20px;">请选择聊天对象</div>'; return; }
-
-      const { data } = await _supabase.from('chat_messages')
-        .select('*')
-        .or(`and(sender.eq.${currentUser},receiver.eq.${friend}),and(sender.eq.${friend},receiver.eq.${currentUser})`)
-        .order('id', { ascending: true });
-
-      if (!data || data.length === 0) {
-        historyBox.innerHTML = '<div style="text-align:center; color:#aaa; font-size:12px; padding-top:20px;">暂无消息，开始聊两句吧~</div>';
-        return;
-      }
-
-      historyBox.innerHTML = data.map(m => {
-        const isMe = m.sender === currentUser;
-        return `
-          <div class="msg-row ${isMe ? 'me' : 'other'}">
-            <span class="msg-sender-name">${escapeHtml(m.sender)}</span>
-            <div class="msg-bubble">${escapeHtml(m.message)}</div>
-          </div>
-        `;
-      }).join('');
-      
-      // 自动滚动到底部
-      historyBox.scrollTop = historyBox.scrollHeight;
-    }
-
-    async function sendChatMessage() {
-      const friend = document.getElementById('friendSelect').value;
-      const input = document.getElementById('chatInput');
-      let msg = input.value.trim();
-
-      if (!friend || !msg) return;
-
-      msg = filterBadWords(msg);
-      await _supabase.from('chat_messages').insert([{
-        sender: currentUser,
-        receiver: friend,
-        message: msg
-      }]);
-
-      input.value = '';
-      loadChatHistory();
-    }
-
-    // 6. 发表白、点赞、评论逻辑
-    async function addPost() {
-      let target = document.getElementById('targetInput').value.trim();
+    async function submitPost() {
       let content = document.getElementById('contentInput').value.trim();
-
-      if (!target || !content) {
-        alert('请填写完整信息！');
-        return;
-      }
-
-      target = filterBadWords(target);
-      content = filterBadWords(content);
+      if (!content && !selectedBase64Image) { alert('发帖内容不能为空！'); return; }
 
       const { error } = await _supabase.from('posts').insert([{
-        author: currentUser,
-        username: currentUser,
-        target: target,
+        author: currentUser.name,
+        user_uid: currentUser.uid,
         content: content,
-        likes: 0
+        likes: 0,
+        is_pinned: false,
+        image_url: selectedBase64Image
       }]);
 
       if (error) {
-        alert('发帖失败: ' + error.message);
+        alert('发布失败: ' + error.message);
       } else {
-        alert('发送成功！💕');
-        document.getElementById('targetInput').value = '';
-        document.getElementById('contentInput').value = '';
         closePublishModal();
         fetchPosts();
       }
     }
-    // 北京时间格式化 (UTC+8)
-    function formatBeijingTime(utcDateStr) {
-      if (!utcDateStr) return '';
-      const date = new Date(utcDateStr);
-      if (isNaN(date.getTime())) return '';
 
-      return date.toLocaleString('zh-CN', {
-        timeZone: 'Asia/Shanghai',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-    }
-
-    // 获取本地已点赞的帖子 ID 列表
-    function getLikedPosts() {
-      const liked = localStorage.getItem('wall_liked_posts');
-      return liked ? JSON.parse(liked) : [];
-    }
-
-       // 1. 评论逻辑
-    async function addComment(postId) {
-      const input = document.getElementById(`commentInput_${postId}`);
-      let content = input.value.trim();
-      if (!content) return;
-
-      content = filterBadWords(content);
-
-      const { error } = await _supabase.from('comments').insert([{
-        post_id: postId,
-        username: currentUser,
-        content: content
-      }]);
-
-      if (error) {
-        alert('评论失败: ' + error.message);
-        return;
-      }
-
-      input.value = '';
-      await fetchPosts();
-    }
-
-    // 2. 点击评论作者快捷填充 @回复
-    function prepareReply(postId, targetUser) {
-      const input = document.getElementById(`commentInput_${postId}`);
-      if (input) {
-        input.value = `@${targetUser} `;
-        input.focus();
+    async function loadUserProfilesMap() {
+      const { data } = await _supabase.from('profiles').select('*');
+      userProfilesMap.clear();
+      if (data) {
+        data.forEach(p => {
+          if (p.uid) userProfilesMap.set(String(p.uid), p);
+          if (p.username) userProfilesMap.set(String(p.username), p);
+        });
       }
     }
-    
-    // 3. 防重复点赞逻辑
-    async function likePost(id, currentLikes) {
-      const likedPosts = getLikedPosts();
 
-      if (likedPosts.includes(id)) {
-        alert('你已经赞过这条表白啦！💕');
-        return;
-      }
-
-      const { error } = await _supabase
-        .from('posts')
-        .update({ likes: (currentLikes || 0) + 1 })
-        .eq('id', id);
-
-      if (error) {
-        alert('点赞失败: ' + error.message);
-        return;
-      }
-
-      likedPosts.push(id);
-      localStorage.setItem('wall_liked_posts', JSON.stringify(likedPosts));
-      fetchPosts();
-    }
-
-    // 4. 渲染主列表（左上角 To，右下角：时间在前，发帖人在后）
     async function fetchPosts() {
+      await loadUserProfilesMap();
       const container = document.getElementById('postsContainer');
-      const likedPosts = getLikedPosts();
-
-      const { data: posts, error } = await _supabase
-        .from('posts')
+      
+      const { data: posts } = await _supabase.from('posts')
         .select('*')
+        .order('is_pinned', { ascending: false, nullsFirst: false })
         .order('id', { ascending: false });
 
-      if (error) {
-        container.innerHTML = '加载失败，请检查数据库配置。';
-        return;
-      }
-
-      if (!posts || posts.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color:#7d6e83; padding:30px; font-size:13px;">还没有人发表白，快来抢沙发吧！✨</div>';
-        return;
-      }
-
       const { data: comments } = await _supabase.from('comments').select('*').order('id', { ascending: true });
+      allPostsData = posts || [];
+      allCommentsData = comments || [];
+      renderPostList(allPostsData, allCommentsData, container);
+    }
+
+    async function fetchMyPosts() {
+      await loadUserProfilesMap();
+      const container = document.getElementById('myPostsContainer');
+      const myPosts = allPostsData.filter(p => String(p.user_uid) === String(currentUser.uid) || p.author === currentUser.name);
+      renderPostList(myPosts, allCommentsData, container);
+    }
+
+    function onSearchInput() {
+      const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+      const container = document.getElementById('postsContainer');
+      if (!kw) { renderPostList(allPostsData, allCommentsData, container); return; }
+      const filtered = allPostsData.filter(p => 
+        (p.content && p.content.toLowerCase().includes(kw)) || 
+        (p.author && p.author.toLowerCase().includes(kw))
+      );
+      renderPostList(filtered, allCommentsData, container);
+    }
+
+    /* 🌟 新增：点击头像进入对方个人主页/弹窗 */
+    function viewUserProfile(targetUid, authorName) {
+      let targetProfile = userProfilesMap.get(String(targetUid)) || userProfilesMap.get(String(authorName));
+      
+      // 如果是看自己，直接切到个人中心
+      if (String(targetUid) === String(currentUser.uid) || authorName === currentUser.name) {
+        switchMainTab('profile');
+        return;
+      }
+
+      document.getElementById('targetUserName').innerText = authorName || (targetProfile ? targetProfile.username : '匿名用户');
+      document.getElementById('targetUserUid').innerText = targetUid || (targetProfile ? targetProfile.uid : '未知');
+      document.getElementById('targetUserAvatar').src = (targetProfile && targetProfile.avatar) ? targetProfile.avatar : DEFAULT_AVATAR;
+      document.getElementById('targetUserBio').innerText = (targetProfile && targetProfile.bio) ? targetProfile.bio : '这个用户很懒，什么都没写~';
+
+      // 绑定发送私信按钮
+      const chatBtn = document.getElementById('startChatBtn');
+      chatBtn.onclick = function() {
+        closeUserProfileModal();
+        switchMainTab('chat');
+        openChatRoom(authorName);
+      };
+
+      document.getElementById('userProfileModal').style.display = 'flex';
+    }
+
+    function closeUserProfileModal() {
+      document.getElementById('userProfileModal').style.display = 'none';
+    }
+
+    function renderPostList(posts, comments, container) {
+      if (!posts || posts.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#8e8e93; font-size:13px;">暂无动态内容</div>';
+        return;
+      }
 
       container.innerHTML = posts.map(post => {
         const postComments = comments ? comments.filter(c => c.post_id === post.id) : [];
-        const postAuthor = post.author || post.username || '热心同学';
-        const isLiked = likedPosts.includes(post.id);
+        const realProfile = userProfilesMap.get(String(post.user_uid)) || userProfilesMap.get(String(post.author)) || {};
 
-        // 渲染评论列表（包含评论时间 & 点击回复）
-        const commentsHtml = postComments.map(c => {
-          const commentAuthor = c.author || c.username || '热心同学';
-          const commentTime = formatBeijingTime(c.created_at);
-          return `
-            <div class="comment-item" style="display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <span class="comment-author" onclick="prepareReply(${post.id}, '${escapeHtml(commentAuthor)}')">@${escapeHtml(commentAuthor)}</span>: 
-                <span>${escapeHtml(c.content)}</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span style="font-size:10px; color:#bbb;">${commentTime}</span>
-                ${commentAuthor !== currentUser ? `<button class="reply-btn" onclick="prepareReply(${post.id}, '${escapeHtml(commentAuthor)}')">回复</button>` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
+        const displayUid = post.user_uid || realProfile.uid || '';
+        const displayAvatar = realProfile.avatar || DEFAULT_AVATAR;
+        const isAuthorAdmin = realProfile.is_admin || String(displayUid) === '846193';
+        const isMyPost = String(displayUid) === String(currentUser.uid) || post.author === currentUser.name;
+        const isLiked = !!myLikedPostsMap[post.id];
+        const isPinnedBool = post.is_pinned === true || post.is_pinned === 'true';
 
         return `
-          <div class="post-card">
-            <!-- 头部：左上角放表白对象 (To: xxx) -->
-            <div class="post-header" style="justify-content: flex-start;">
-              <span class="post-target">To: ${escapeHtml(post.target)}</span>
+          <div class="post-card ${isPinnedBool ? 'pinned' : ''}">
+            <div class="post-header">
+              <!-- 🌟 点击头像/作者名字触发 viewUserProfile 动态查看个人信息及发起私信 -->
+              <div class="author-info" onclick="viewUserProfile('${displayUid}', '${escapeHtml(post.author)}')">
+                <img class="user-avatar-img" src="${displayAvatar}" onerror="handleAvatarError(this)">
+                <div>
+                  <div class="post-author-name">
+                    ${isPinnedBool ? `<span class="pin-badge">📌 置顶</span>` : ''}
+                    ${escapeHtml(post.author)}
+                    ${isAuthorAdmin ? `<span class="admin-tag">开发者</span>` : ''}
+                  </div>
+                  <div class="post-time">${formatBeijingTime(post.created_at)}</div>
+                </div>
+              </div>
+
+              <div class="mini-action-group">
+                ${currentUser.isAdmin ? `<button class="mini-btn ${isPinnedBool ? 'active-pin' : ''}" title="置顶/取消置顶" onclick="togglePinPost(${post.id}, ${isPinnedBool})">📌</button>` : ''}
+                ${(isMyPost || currentUser.isAdmin) ? `<button class="mini-btn" title="删除" onclick="deletePost(${post.id})">🗑️</button>` : ''}
+                ${(currentUser.isAdmin && !isMyPost) ? `<button class="mini-btn" title="禁言" onclick="toggleBanUser('${displayUid}')">🚫</button>` : ''}
+              </div>
             </div>
-            
+
             <div class="post-content">${escapeHtml(post.content)}</div>
-            
-            <!-- 底部：左侧点赞，右侧：时间在前，发帖人在后 -->
+            ${post.image_url ? `<img class="post-image" src="${escapeHtml(post.image_url)}">` : ''}
+
             <div class="post-footer">
-              <button class="action-btn" style="${isLiked ? 'background:rgba(255,182,193,0.8); color:#d6336c;' : ''}" onclick="likePost(${post.id}, ${post.likes || 0})">
-                ${isLiked ? '❤️ 已赞' : '❤️ 点赞'} (${post.likes || 0})
-              </button>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:11px; color:#aaa;">${formatBeijingTime(post.created_at)}</span>
-                <span class="post-author" onclick="applyChat('${escapeHtml(postAuthor)}')">From: @${escapeHtml(postAuthor)}</span>
+              <div class="action-group">
+                <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="likePost(${post.id}, ${post.likes || 0})">
+                  ${isLiked ? '❤️' : '🤍'} ${post.likes || 0}
+                </button>
+                <button class="action-btn" onclick="sharePostLink(${post.id})">🔗 分享</button>
               </div>
             </div>
-            
-            <!-- 评论区 -->
+
             <div class="comments-section">
-              <div id="commentList_${post.id}">
-                ${commentsHtml || '<div style="font-size:11px; color:#bbb;">暂无评论，快来互动吧...</div>'}
-              </div>
+              ${postComments.map(c => `
+                <div class="comment-item">
+                  <div><span class="comment-author" onclick="viewUserProfile('', '${escapeHtml(c.username)}')">${escapeHtml(c.username)}</span>: ${escapeHtml(c.content)}</div>
+                  ${(c.username === currentUser.name || currentUser.isAdmin) ? `<button class="mini-btn" onclick="deleteComment(${c.id})">✕</button>` : ''}
+                </div>
+              `).join('')}
               <div class="comment-input-group">
-                <input type="text" id="commentInput_${post.id}" class="comment-input" placeholder="写下你的评论...">
+                <input type="text" id="commentInput_${post.id}" class="comment-input" placeholder="评论...">
                 <button class="comment-btn" onclick="addComment(${post.id})">发送</button>
               </div>
             </div>
@@ -875,10 +804,159 @@
       }).join('');
     }
 
-    // 7. 初始化启动
-    window.onload = function() {
-      initUser();
+    async function togglePinPost(postId, currentPinnedState) {
+      const targetState = !currentPinnedState;
+      const { error } = await _supabase.from('posts').update({ is_pinned: targetState }).eq('id', postId);
+      if (error) {
+        alert('置顶切换失败: ' + error.message);
+      } else {
+        fetchPosts();
+      }
+    }
+
+    async function likePost(id, currentLikes) {
+      if (myLikedPostsMap[id]) return;
+      myLikedPostsMap[id] = true;
+      saveUserDataToLocal();
+      await _supabase.from('posts').update({ likes: (currentLikes || 0) + 1 }).eq('id', id);
       fetchPosts();
+    }
+
+    async function sharePostLink(postId) {
+      alert('动态链接已生成：' + window.location.origin + window.location.pathname + '#post-' + postId);
+    }
+
+    async function deletePost(postId) {
+      if (!confirm('确定要删除该动态吗？')) return;
+      await _supabase.from('posts').delete().eq('id', postId);
+      fetchPosts();
+    }
+
+    async function toggleBanUser(targetUid) {
+      if (confirm(`确定要禁言 UID:${targetUid} 吗？`)) {
+        await _supabase.from('profiles').update({ is_banned: true }).eq('uid', targetUid);
+        alert('操作成功！');
+      }
+    }
+
+    async function renderChatFriendList() {
+      await loadUserProfilesMap();
+      const container = document.getElementById('chatFriendsContainer');
+      const { data: profiles } = await _supabase.from('profiles').select('*');
+
+      if (!profiles || profiles.length <= 1) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#8e8e93; font-size:13px;">暂无联系人</div>';
+        return;
+      }
+
+      container.innerHTML = profiles
+        .filter(p => String(p.uid) !== String(currentUser.uid))
+        .map(p => `
+          <div class="chat-user-item" onclick="openChatRoom('${escapeHtml(p.username)}')">
+            <img class="user-avatar-img" style="margin-right:10px;" src="${p.avatar || DEFAULT_AVATAR}">
+            <div>
+              <div style="font-size:14px; font-weight:600;">${escapeHtml(p.username)}</div>
+              <div style="font-size:12px; color:#8e8e93;">UID: ${p.uid || '----'}</div>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function searchUserByUid() {
+      const uidInput = document.getElementById('searchUidInput').value.trim();
+      const target = userProfilesMap.get(String(uidInput));
+      if (target) {
+        openChatRoom(target.username);
+      } else {
+        alert('未找到该 UID 用户！');
+      }
+    }
+
+    function openChatRoom(friendUsername) {
+      activeChatFriendName = friendUsername;
+      document.getElementById('chatTargetName').innerText = friendUsername;
+      document.getElementById('chatListView').style.display = 'none';
+      document.getElementById('activeChatRoom').style.display = 'flex';
+      loadChatHistory();
+    }
+
+    function closeChatRoom() {
+      activeChatFriendName = null;
+      document.getElementById('activeChatRoom').style.display = 'none';
+      document.getElementById('chatListView').style.display = 'block';
+    }
+
+    async function loadChatHistory() {
+      if (!activeChatFriendName) return;
+      const historyBox = document.getElementById('chatHistory');
+      const { data } = await _supabase.from('chat_messages')
+        .select('*')
+        .or(`and(sender.eq.${currentUser.name},receiver.eq.${activeChatFriendName}),and(sender.eq.${activeChatFriendName},receiver.eq.${currentUser.name})`)
+        .order('id', { ascending: true });
+
+      historyBox.innerHTML = (data || []).map(m => `
+        <div class="msg-row ${m.sender === currentUser.name ? 'me' : 'other'}">
+          <div class="msg-bubble">${escapeHtml(m.message)}</div>
+        </div>
+      `).join('');
+      historyBox.scrollTop = historyBox.scrollHeight;
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!activeChatFriendName || !msg) return;
+
+      await _supabase.from('chat_messages').insert([{ sender: currentUser.name, receiver: activeChatFriendName, message: msg }]);
+      input.value = '';
+      loadChatHistory();
+    }
+
+    async function addComment(postId) {
+      const input = document.getElementById(`commentInput_${postId}`);
+      let content = input.value.trim();
+      if (!content) return;
+      await _supabase.from('comments').insert([{ post_id: postId, username: currentUser.name, content: content }]);
+      input.value = '';
+      fetchPosts();
+    }
+
+    async function deleteComment(commentId) {
+      await _supabase.from('comments').delete().eq('id', commentId);
+      fetchPosts();
+    }
+
+    function openEditProfileModal() { document.getElementById('editProfileModal').style.display = 'flex'; }
+    function closeEditProfileModal() { document.getElementById('editProfileModal').style.display = 'none'; }
+
+    function saveProfile() {
+      const name = document.getElementById('editNameInput').value.trim();
+      const qq = document.getElementById('editQQInput').value.trim();
+      const bio = document.getElementById('editBioInput').value.trim();
+
+      if (name) currentUser.name = name;
+      if (qq) { currentUser.qq = qq; currentUser.avatar = `https://q1.qlogo.cn/g?b=qq&nk=${qq}&s=640`; }
+      if (bio) currentUser.bio = bio;
+
+      saveUserDataToLocal();
+      syncUserProfileToDb();
+      updateProfileUI();
+      closeEditProfileModal();
+      fetchPosts();
+    }
+
+    function formatBeijingTime(utcDateStr) {
+      if (!utcDateStr) return '';
+      const date = new Date(utcDateStr);
+      return isNaN(date.getTime()) ? '' : date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    function escapeHtml(str) {
+      return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;') : '';
+    }
+
+    window.onload = function() {
+      checkLoginStatus();
     };
   </script>
 </body>
