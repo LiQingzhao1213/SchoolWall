@@ -649,39 +649,6 @@
         fetchPosts();
       }
     }
-
-    async function likePost(id, currentLikes) {
-      await _supabase
-        .from('posts')
-        .update({ likes: (currentLikes || 0) + 1 })
-        .eq('id', id);
-
-      fetchPosts();
-    }
-
-    async function addComment(postId) {
-      const input = document.getElementById(`commentInput_${postId}`);
-      let content = input.value.trim();
-      if (!content) return;
-
-      content = filterBadWords(content);
-
-      const { error } = await _supabase.from('comments').insert([{
-        post_id: postId,
-        author: currentUser,
-        username: currentUser,
-        content: content
-      }]);
-
-      if (error) {
-        alert('评论失败: ' + error.message);
-        return;
-      }
-
-      input.value = '';
-      await fetchPosts();
-    }
-
     // 北京时间格式化 (UTC+8)
     function formatBeijingTime(utcDateStr) {
       if (!utcDateStr) return '';
@@ -698,8 +665,44 @@
       });
     }
 
+    // 获取本地已点赞的帖子 ID 列表
+    function getLikedPosts() {
+      const liked = localStorage.getItem('wall_liked_posts');
+      return liked ? JSON.parse(liked) : [];
+    }
+
+    // 防重复点赞逻辑
+    async function likePost(id, currentLikes) {
+      const likedPosts = getLikedPosts();
+
+      // 1. 检查当前用户是否已经赞过这个帖子
+      if (likedPosts.includes(id)) {
+        alert('你已经赞过这条表白啦！💕');
+        return;
+      }
+
+      // 2. 更新 Supabase 数据库中的点赞数
+      const { error } = await _supabase
+        .from('posts')
+        .update({ likes: (currentLikes || 0) + 1 })
+        .eq('id', id);
+
+      if (error) {
+        alert('点赞失败: ' + error.message);
+        return;
+      }
+
+      // 3. 将这个帖子的 ID 记录到本地
+      likedPosts.push(id);
+      localStorage.setItem('wall_liked_posts', JSON.stringify(likedPosts));
+
+      // 4. 重新刷新页面，更新点赞状态和数量
+      fetchPosts();
+    }
+
     async function fetchPosts() {
       const container = document.getElementById('postsContainer');
+      const likedPosts = getLikedPosts(); // 读取已赞列表
 
       const { data: posts, error } = await _supabase
         .from('posts')
@@ -721,6 +724,9 @@
       container.innerHTML = posts.map(post => {
         const postComments = comments ? comments.filter(c => c.post_id === post.id) : [];
         const postAuthor = post.author || post.username || '热心同学';
+        
+        // 判断当前帖子是否已经被当前设备点赞过
+        const isLiked = likedPosts.includes(post.id);
 
         const commentsHtml = postComments.map(c => {
           const commentAuthor = c.author || c.username || '热心同学';
@@ -743,8 +749,8 @@
             </div>
             <div class="post-content">${escapeHtml(post.content)}</div>
             <div class="post-footer">
-              <button class="action-btn" onclick="likePost(${post.id}, ${post.likes || 0})">
-                ❤️ 点赞 (${post.likes || 0})
+              <button class="action-btn" style="${isLiked ? 'background:rgba(255,182,193,0.8); color:#d6336c;' : ''}" onclick="likePost(${post.id}, ${post.likes || 0})">
+                ${isLiked ? '❤️ 已赞' : '❤️ 点赞'} (${post.likes || 0})
               </button>
               <span style="font-size:11px; color:#aaa;">${formatBeijingTime(post.created_at)}</span>
             </div>
