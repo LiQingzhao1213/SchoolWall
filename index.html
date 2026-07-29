@@ -26,7 +26,7 @@
       overflow-x: hidden;
     }
 
-    /* 🌟 开场动画 */
+    /* 开场动画 */
     #splashScreen {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -41,223 +41,69 @@
       animation: splashFadeOut 0.6s ease 1.2s forwards;
     }
 
-    .splash-logo {
-      font-size: 52px;
-      margin-bottom: 12px;
-      animation: logoPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+    .splash-logo { font-size: 52px; margin-bottom: 12px; animation: logoPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .splash-title { font-size: 20px; font-weight: 700; color: #1c1c1e; letter-spacing: 2px; animation: fadeInUp 0.8s ease; }
 
-    .splash-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1c1c1e;
-      letter-spacing: 2px;
-      animation: fadeInUp 0.8s ease;
-    }
+    @keyframes logoPop { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes splashFadeOut { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-    @keyframes logoPop {
-      0% { opacity: 0; transform: scale(0.5); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes splashFadeOut {
-      0% { opacity: 1; visibility: visible; }
-      100% { opacity: 0; visibility: hidden; }
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    header { 
-      position: sticky; 
-      top: 10px; 
-      z-index: 90; 
-      margin-bottom: 16px;
-    }
+    header { position: sticky; top: 10px; z-index: 90; margin-bottom: 16px; }
 
     .search-bar-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(20px) saturate(180%);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      border-radius: 20px;
-      padding: 10px 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px;
+      padding: 10px 16px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
     }
 
-    .search-bar-box input {
-      border: none;
-      background: transparent;
-      width: 100%;
-      font-size: 14px;
-      outline: none;
-      color: #1c1c1e;
-      text-align: center;
-    }
-
-    .search-bar-box input::placeholder {
-      text-align: center;
-      color: #8e8e93;
-    }
+    .search-bar-box input { border: none; background: transparent; width: 100%; font-size: 14px; outline: none; color: #1c1c1e; text-align: center; }
+    .search-bar-box input::placeholder { text-align: center; color: #8e8e93; }
 
     .post-card { 
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      padding: 16px; 
-      border-radius: 22px; 
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); 
-      margin-bottom: 16px; 
-      animation: fadeInUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.6); padding: 16px; border-radius: 22px; 
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); margin-bottom: 16px; 
+      animation: fadeInUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative;
     }
 
-    .post-card.pinned {
-      border: 1.5px solid rgba(0, 122, 255, 0.5);
-      background: rgba(255, 255, 255, 0.75);
-      box-shadow: 0 10px 30px rgba(0, 122, 255, 0.08);
-    }
-
-    .pin-badge {
-      font-size: 10px;
-      background: #007aff;
-      color: #fff;
-      padding: 2px 6px;
-      border-radius: 6px;
-      margin-right: 4px;
-      font-weight: 600;
-    }
-
-    .post-header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center;
-      margin-bottom: 12px; 
-    }
-    
-    .author-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-
-    .user-avatar-img {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #e5e5ea;
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      transition: transform 0.2s;
-    }
+    .post-card.pinned { border: 1.5px solid rgba(0, 122, 255, 0.5); background: rgba(255, 255, 255, 0.75); box-shadow: 0 10px 30px rgba(0, 122, 255, 0.08); }
+    .pin-badge { font-size: 10px; background: #007aff; color: #fff; padding: 2px 6px; border-radius: 6px; margin-right: 4px; font-weight: 600; }
+    .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .author-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .user-avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #e5e5ea; border: 1px solid rgba(255, 255, 255, 0.8); transition: transform 0.2s; }
     .user-avatar-img:active { transform: scale(0.92); }
-
-    .post-author-name {
-      font-weight: 600;
-      font-size: 14px;
-      color: #000;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .post-author-name { font-weight: 600; font-size: 14px; color: #000; display: flex; align-items: center; gap: 6px; }
 
     .admin-tag {
-      font-size: 10px;
-      background: linear-gradient(135deg, #ff2d55, #ff3b30);
-      color: #fff;
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-weight: 600;
+      font-size: 10px; background: linear-gradient(135deg, #ff2d55, #ff3b30);
+      color: #fff; padding: 2px 6px; border-radius: 6px; font-weight: 600;
       box-shadow: 0 2px 5px rgba(255, 45, 85, 0.25);
     }
 
     .post-time { font-size: 11px; color: #8e8e93; margin-top: 2px; }
-
-    .mini-action-group {
-      display: flex;
-      gap: 4px;
-      background: rgba(0, 0, 0, 0.04);
-      padding: 3px;
-      border-radius: 12px;
-    }
-
-    .mini-btn {
-      border: none;
-      background: transparent;
-      padding: 3px 6px;
-      border-radius: 8px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+    .mini-action-group { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.04); padding: 3px; border-radius: 12px; }
+    .mini-btn { border: none; background: transparent; padding: 3px 6px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: background 0.2s; }
     .mini-btn:active { background: rgba(0, 0, 0, 0.1); }
     .mini-btn.active-pin { color: #007aff; font-weight: 700; }
 
-    .post-content { 
-      font-size: 15px; 
-      line-height: 1.5; 
-      margin-bottom: 12px; 
-      word-break: break-word; 
-      color: #1c1c1e; 
-    }
-
-    .post-image {
-      width: 100%;
-      max-height: 280px;
-      object-fit: cover;
-      border-radius: 14px;
-      margin-bottom: 12px;
-    }
-
-    .post-footer { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      border-top: 0.5px solid rgba(0, 0, 0, 0.06); 
-      padding-top: 10px; 
-    }
-
+    .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 12px; word-break: break-word; color: #1c1c1e; }
+    .post-image { width: 100%; max-height: 280px; object-fit: cover; border-radius: 14px; margin-bottom: 12px; }
+    .post-footer { display: flex; justify-content: space-between; align-items: center; border-top: 0.5px solid rgba(0, 0, 0, 0.06); padding-top: 10px; }
     .action-group { display: flex; gap: 8px; }
 
     .action-btn { 
-      background: rgba(0, 0, 0, 0.04); 
-      border: none;
-      color: #007aff; 
-      padding: 6px 12px; 
-      border-radius: 14px; 
-      font-size: 12px; 
-      font-weight: 500;
-      cursor: pointer; 
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
+      background: rgba(0, 0, 0, 0.04); border: none; color: #007aff; padding: 6px 12px; 
+      border-radius: 14px; font-size: 12px; font-weight: 500; cursor: pointer; 
+      display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;
     }
     .action-btn:active { transform: scale(0.95); }
     .action-btn.liked { background: rgba(255, 59, 48, 0.12); color: #ff3b30; font-weight: 600; }
 
-    .comments-section { 
-      margin-top: 12px; 
-      background: rgba(255, 255, 255, 0.4); 
-      padding: 10px; 
-      border-radius: 14px; 
-    }
-    .comment-item { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      font-size: 13px; 
-      padding: 6px 0; 
-      line-height: 1.4;
-      border-bottom: 0.5px dashed rgba(0, 0, 0, 0.08);
-    }
+    .comments-section { margin-top: 12px; background: rgba(255, 255, 255, 0.4); padding: 10px; border-radius: 14px; }
+    .comment-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 0; line-height: 1.4; border-bottom: 0.5px dashed rgba(0, 0, 0, 0.08); }
     .comment-item:last-child { border-bottom: none; }
     .comment-author { font-weight: 600; color: #007aff; cursor: pointer; }
 
@@ -266,62 +112,27 @@
     .comment-btn { background: #007aff; color: #fff; border: none; padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
     .glass-dock-bar {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 400px;
-      height: 64px;
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(25px) saturate(180%);
-      -webkit-backdrop-filter: blur(25px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 32px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 1000;
-      padding: 0 10px;
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      width: 90%; max-width: 400px; height: 64px; background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 32px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); display: flex; justify-content: space-around;
+      align-items: center; z-index: 1000; padding: 0 10px;
     }
 
     .dock-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      height: 100%;
-      color: #8e8e93;
-      font-size: 10px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      border: none;
-      background: transparent;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; height: 100%; color: #8e8e93; font-size: 10px; font-weight: 500; cursor: pointer;
+      transition: all 0.25s ease; border: none; background: transparent;
     }
     .dock-item .dock-icon { font-size: 20px; margin-bottom: 2px; }
     .dock-item.active { color: #007aff; font-weight: 600; }
 
     .fab-btn { 
-      position: fixed; 
-      bottom: 96px; 
-      right: 20px; 
-      background: linear-gradient(135deg, #007aff, #0051a8); 
-      color: #fff; 
-      width: 52px; 
-      height: 52px; 
-      border-radius: 26px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 20px; 
-      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.38); 
-      border: none; 
-      cursor: pointer; 
-      z-index: 999; 
-      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: fixed; bottom: 96px; right: 20px; background: linear-gradient(135deg, #007aff, #0051a8); 
+      color: #fff; width: 52px; height: 52px; border-radius: 26px; display: flex; align-items: center; 
+      justify-content: center; font-size: 20px; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.38); 
+      border: none; cursor: pointer; z-index: 999; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .fab-btn:active { transform: scale(0.88); }
 
@@ -329,24 +140,13 @@
     #profilePage { background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); border-radius: 22px; padding: 20px; }
 
     .chat-user-item {
-      display: flex;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(15px);
-      padding: 12px 14px;
-      border-radius: 16px;
-      margin-bottom: 8px;
-      cursor: pointer;
+      display: flex; align-items: center; background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(15px); padding: 12px 14px; border-radius: 16px; margin-bottom: 8px; cursor: pointer;
     }
 
     #activeChatRoom {
-      display: none;
-      flex-direction: column;
-      height: calc(100vh - 160px);
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 12px;
+      display: none; flex-direction: column; height: calc(100vh - 160px);
+      background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-radius: 20px; padding: 12px;
     }
 
     .chat-box { flex: 1; overflow-y: auto; background: rgba(240, 240, 245, 0.5); border-radius: 14px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 12px; }
@@ -515,30 +315,38 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibGRreXlxbW5qZWl3eWJpaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODY0NDIsImV4cCI6MjEwMDg2MjQ0Mn0.UOwl033Ame7kMoo3aHqm44BW4IG4qHmtKDvh6DptPVs';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // 🔒 真正的系统开发者安全白名单 (写死在代码内核，黑客无法修改)
+    const ADMIN_WHITELIST_UIDS = ['846193'];
+
     let myLikedPostsMap = JSON.parse(localStorage.getItem('forum_liked_posts') || '{}');
 
-    // 🌟 修复：生成随机 UID，避免所有人都变成 846193
+    // 🌟 1. 严格权限校验机制
+    function checkIsAdmin(uid) {
+      if (!uid) return false;
+      return ADMIN_WHITELIST_UIDS.includes(String(uid).trim());
+    }
+
+    // 🌟 2. 避免任何人变成 846193
     function getOrCreateUid() {
       let savedUid = localStorage.getItem('forum_user_uid');
-      if (!savedUid) {
+      if (!savedUid || savedUid === '846193') {
+        // 如果不是你本人，强制重新给他们生成一个普通 UID
         savedUid = String(Math.floor(100000 + Math.random() * 900000));
         localStorage.setItem('forum_user_uid', savedUid);
       }
       return savedUid;
     }
 
-    let localUid = getOrCreateUid();
-    // 🌟 修复：只有显式等于 '846193' 的人才是开发者
-    let isDev = String(localUid) === '846193';
-
+    // 初始化用户
+    let localUid = localStorage.getItem('forum_user_uid') || getOrCreateUid();
+    
     let currentUser = {
       uid: localUid,
       qq: localStorage.getItem('forum_user_qq') || '',
       name: localStorage.getItem('forum_username') || '',
       avatar: localStorage.getItem('forum_user_avatar') || DEFAULT_AVATAR,
-      bio: localStorage.getItem('forum_user_bio') || (isDev ? '开发者管理员' : '暂无简介...'),
-      isAdmin: isDev,
-      isBanned: false
+      bio: localStorage.getItem('forum_user_bio') || (checkIsAdmin(localUid) ? '开发者管理员' : '暂无简介...'),
+      isAdmin: checkIsAdmin(localUid) // 权限直接从安全白名单匹配！
     };
 
     let selectedBase64Image = null; 
@@ -563,14 +371,13 @@
       }
     }
 
+    // 🌟 防提权：向 Supabase 写入资料时，绝不包含 is_admin 字段！
     async function syncUserProfileToDb() {
       await _supabase.from('profiles').upsert([{
         uid: currentUser.uid,
         username: currentUser.name,
         avatar: currentUser.avatar,
-        bio: currentUser.bio,
-        is_admin: currentUser.isAdmin,
-        is_banned: currentUser.isBanned
+        bio: currentUser.bio
       }], { onConflict: 'uid' });
     }
 
@@ -603,7 +410,6 @@
       localStorage.setItem('forum_user_qq', currentUser.qq);
       localStorage.setItem('forum_user_avatar', currentUser.avatar);
       localStorage.setItem('forum_user_bio', currentUser.bio);
-      localStorage.setItem('forum_is_admin', currentUser.isAdmin);
       localStorage.setItem('forum_liked_posts', JSON.stringify(myLikedPostsMap));
     }
 
@@ -648,7 +454,7 @@
 
       const { error } = await _supabase.from('posts').insert([{
         author: currentUser.name,
-        user_uid: String(currentUser.uid), // 显式转成 string 写入
+        user_uid: String(currentUser.uid),
         content: content,
         likes: 0,
         is_pinned: false,
@@ -695,7 +501,6 @@
       await loadUserProfilesMap();
       const container = document.getElementById('myPostsContainer');
       
-      // 🌟 修复：严谨的“我的动态”筛选，必须 user_uid 严格相等，且不为空
       const myPosts = allPostsData.filter(p => {
         if (p.user_uid) {
           return String(p.user_uid) === String(currentUser.uid);
@@ -716,24 +521,40 @@
       renderPostList(filtered, allCommentsData, container);
     }
 
-    function viewUserProfile(targetUid, authorName) {
-      let targetProfile = userProfilesMap.get(String(targetUid)) || userProfilesMap.get(String(authorName));
+    // 🌟 3. 彻底修复“点开主页显示未知 UID”的问题
+    async function viewUserProfile(targetUid, authorName) {
+      let profile = null;
+
+      // 优先根据 UID 查全局 Profiles
+      if (targetUid && targetUid !== 'undefined' && targetUid !== 'null' && targetUid !== '') {
+        profile = userProfilesMap.get(String(targetUid));
+      }
       
-      if ((targetUid && String(targetUid) === String(currentUser.uid)) || authorName === currentUser.name) {
+      // 次优通过作者昵称匹配
+      if (!profile && authorName) {
+        profile = userProfilesMap.get(String(authorName));
+      }
+
+      const finalUid = (profile && profile.uid) ? profile.uid : (targetUid && targetUid !== 'undefined' ? targetUid : '未绑定 UID');
+      const finalName = (profile && profile.username) ? profile.username : (authorName || '匿名用户');
+      const finalAvatar = (profile && profile.avatar) ? profile.avatar : DEFAULT_AVATAR;
+      const finalBio = (profile && profile.bio) ? profile.bio : '这个用户很懒，什么都没写~';
+
+      if (String(finalUid) === String(currentUser.uid) || finalName === currentUser.name) {
         switchMainTab('profile');
         return;
       }
 
-      document.getElementById('targetUserName').innerText = authorName || (targetProfile ? targetProfile.username : '匿名用户');
-      document.getElementById('targetUserUid').innerText = targetUid || (targetProfile ? targetProfile.uid : '未知');
-      document.getElementById('targetUserAvatar').src = (targetProfile && targetProfile.avatar) ? targetProfile.avatar : DEFAULT_AVATAR;
-      document.getElementById('targetUserBio').innerText = (targetProfile && targetProfile.bio) ? targetProfile.bio : '这个用户很懒，什么都没写~';
+      document.getElementById('targetUserName').innerText = finalName;
+      document.getElementById('targetUserUid').innerText = finalUid;
+      document.getElementById('targetUserAvatar').src = finalAvatar;
+      document.getElementById('targetUserBio').innerText = finalBio;
 
       const chatBtn = document.getElementById('startChatBtn');
       chatBtn.onclick = function() {
         closeUserProfileModal();
         switchMainTab('chat');
-        openChatRoom(authorName);
+        openChatRoom(finalName);
       };
 
       document.getElementById('userProfileModal').style.display = 'flex';
@@ -756,8 +577,8 @@
         const displayUid = post.user_uid || realProfile.uid || '';
         const displayAvatar = realProfile.avatar || DEFAULT_AVATAR;
         
-        // 🌟 修复：严格判断只有真正的 UID 846193 才是开发者
-        const isAuthorAdmin = String(displayUid) === '846193' || (realProfile.is_admin && String(displayUid) === '846193');
+        // 🔒 只有在系统硬编码白名单中的 UID，前端才展示开发者标识！
+        const isAuthorAdmin = checkIsAdmin(displayUid);
         
         const isMyPost = (post.user_uid && String(post.user_uid) === String(currentUser.uid)) || (!post.user_uid && post.author === currentUser.name);
         const isLiked = !!myLikedPostsMap[post.id];
@@ -781,7 +602,6 @@
               <div class="mini-action-group">
                 ${currentUser.isAdmin ? `<button class="mini-btn ${isPinnedBool ? 'active-pin' : ''}" title="置顶/取消置顶" onclick="togglePinPost(${post.id}, ${isPinnedBool})">📌</button>` : ''}
                 ${(isMyPost || currentUser.isAdmin) ? `<button class="mini-btn" title="删除" onclick="deletePost(${post.id})">🗑️</button>` : ''}
-                ${(currentUser.isAdmin && !isMyPost) ? `<button class="mini-btn" title="禁言" onclick="toggleBanUser('${displayUid}')">🚫</button>` : ''}
               </div>
             </div>
 
@@ -815,6 +635,7 @@
     }
 
     async function togglePinPost(postId, currentPinnedState) {
+      if (!currentUser.isAdmin) { alert('无权操作'); return; }
       const targetState = !currentPinnedState;
       const { error } = await _supabase.from('posts').update({ is_pinned: targetState }).eq('id', postId);
       if (error) {
@@ -842,13 +663,6 @@
       fetchPosts();
     }
 
-    async function toggleBanUser(targetUid) {
-      if (confirm(`确定要禁言 UID:${targetUid} 吗？`)) {
-        await _supabase.from('profiles').update({ is_banned: true }).eq('uid', targetUid);
-        alert('操作成功！');
-      }
-    }
-
     async function renderChatFriendList() {
       await loadUserProfilesMap();
       const container = document.getElementById('chatFriendsContainer');
@@ -866,7 +680,7 @@
             <img class="user-avatar-img" style="margin-right:10px;" src="${p.avatar || DEFAULT_AVATAR}">
             <div>
               <div style="font-size:14px; font-weight:600;">${escapeHtml(p.username)}</div>
-              <div style="font-size:12px; color:#8e8e93;">UID: ${p.uid || '----'}</div>
+              <div style="font-size:12px; color:#8e8e93;">UID: ${p.uid || '未绑定'}</div>
             </div>
           </div>
         `).join('');
