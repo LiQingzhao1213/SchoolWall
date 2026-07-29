@@ -670,6 +670,29 @@
       const liked = localStorage.getItem('wall_liked_posts');
       return liked ? JSON.parse(liked) : [];
     }
+          async function addComment(postId) {
+      const input = document.getElementById(`commentInput_${postId}`);
+      let content = input.value.trim();
+      if (!content) return;
+
+      content = filterBadWords(content);
+
+      const { error } = await _supabase.from('comments').insert([{
+        post_id: postId,
+        author: currentUser,
+        username: currentUser,
+        content: content
+      }]);
+
+      if (error) {
+        alert('评论失败: ' + error.message);
+        return;
+      }
+
+      input.value = '';
+      await fetchPosts();
+    }
+
 
     // 防重复点赞逻辑
     async function likePost(id, currentLikes) {
