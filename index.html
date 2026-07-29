@@ -70,7 +70,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 🌟 删除了图标、文字居中的搜索框 */
     header { 
       position: sticky; 
       top: 10px; 
@@ -98,15 +97,14 @@
       font-size: 14px;
       outline: none;
       color: #1c1c1e;
-      text-align: center; /* 文字居中 */
+      text-align: center;
     }
 
     .search-bar-box input::placeholder {
-      text-align: center; /* 提示词居中 */
+      text-align: center;
       color: #8e8e93;
     }
 
-    /* 🌟 毛玻璃 帖子卡片 */
     .post-card { 
       background: rgba(255, 255, 255, 0.55);
       backdrop-filter: blur(20px) saturate(180%);
@@ -182,7 +180,6 @@
 
     .post-time { font-size: 11px; color: #8e8e93; margin-top: 2px; }
 
-    /* 极简精简版右上角操作胶囊按钮 */
     .mini-action-group {
       display: flex;
       gap: 4px;
@@ -246,7 +243,6 @@
     .action-btn:active { transform: scale(0.95); }
     .action-btn.liked { background: rgba(255, 59, 48, 0.12); color: #ff3b30; font-weight: 600; }
 
-    /* 评论区样式 */
     .comments-section { 
       margin-top: 12px; 
       background: rgba(255, 255, 255, 0.4); 
@@ -269,7 +265,6 @@
     .comment-input { flex: 1; background: rgba(255, 255, 255, 0.8); border: 0.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 6px 10px; font-size: 13px; outline: none; }
     .comment-btn { background: #007aff; color: #fff; border: none; padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
-    /* 底部 iOS 液态玻璃 Dock 栏 */
     .glass-dock-bar {
       position: fixed;
       bottom: 20px;
@@ -309,7 +304,6 @@
     .dock-item .dock-icon { font-size: 20px; margin-bottom: 2px; }
     .dock-item.active { color: #007aff; font-weight: 600; }
 
-    /* 悬浮发帖按钮 */
     .fab-btn { 
       position: fixed; 
       bottom: 96px; 
@@ -331,7 +325,6 @@
     }
     .fab-btn:active { transform: scale(0.88); }
 
-    /* 通讯界面与个人中心 */
     #chatPage, #profilePage { display: none; }
     #profilePage { background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); border-radius: 22px; padding: 20px; }
 
@@ -364,7 +357,6 @@
     .msg-row.other .msg-bubble { background: #fff; color: #000; }
     .msg-row.me .msg-bubble { background: #007aff; color: #fff; }
 
-    /* Modal 弹窗 */
     .modal { 
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
@@ -387,7 +379,6 @@
     <div class="splash-title">校园社区</div>
   </div>
 
-  <!-- 🌟 删除了图标且文字居中的搜索框 -->
   <header id="forumSearchBar">
     <div class="search-bar-box">
       <input type="text" id="searchInput" placeholder="搜索帖子内容或作者..." oninput="onSearchInput()">
@@ -465,7 +456,7 @@
     </button>
   </nav>
 
-  <!-- 🌟 新增：查看他人个人资料弹窗 -->
+  <!-- 查看他人个人资料弹窗 -->
   <div id="userProfileModal" class="modal">
     <div class="modal-content" style="text-align:center;">
       <div style="display:flex; justify-content:flex-end;">
@@ -526,7 +517,18 @@
 
     let myLikedPostsMap = JSON.parse(localStorage.getItem('forum_liked_posts') || '{}');
 
-    let localUid = localStorage.getItem('forum_user_uid') || '846193';
+    // 🌟 修复：生成随机 UID，避免所有人都变成 846193
+    function getOrCreateUid() {
+      let savedUid = localStorage.getItem('forum_user_uid');
+      if (!savedUid) {
+        savedUid = String(Math.floor(100000 + Math.random() * 900000));
+        localStorage.setItem('forum_user_uid', savedUid);
+      }
+      return savedUid;
+    }
+
+    let localUid = getOrCreateUid();
+    // 🌟 修复：只有显式等于 '846193' 的人才是开发者
     let isDev = String(localUid) === '846193';
 
     let currentUser = {
@@ -534,8 +536,8 @@
       qq: localStorage.getItem('forum_user_qq') || '',
       name: localStorage.getItem('forum_username') || '',
       avatar: localStorage.getItem('forum_user_avatar') || DEFAULT_AVATAR,
-      bio: localStorage.getItem('forum_user_bio') || '开发者管理员',
-      isAdmin: isDev || (localStorage.getItem('forum_is_admin') === 'true'),
+      bio: localStorage.getItem('forum_user_bio') || (isDev ? '开发者管理员' : '暂无简介...'),
+      isAdmin: isDev,
       isBanned: false
     };
 
@@ -646,7 +648,7 @@
 
       const { error } = await _supabase.from('posts').insert([{
         author: currentUser.name,
-        user_uid: currentUser.uid,
+        user_uid: String(currentUser.uid), // 显式转成 string 写入
         content: content,
         likes: 0,
         is_pinned: false,
@@ -656,6 +658,8 @@
       if (error) {
         alert('发布失败: ' + error.message);
       } else {
+        document.getElementById('contentInput').value = '';
+        selectedBase64Image = null;
         closePublishModal();
         fetchPosts();
       }
@@ -690,7 +694,14 @@
     async function fetchMyPosts() {
       await loadUserProfilesMap();
       const container = document.getElementById('myPostsContainer');
-      const myPosts = allPostsData.filter(p => String(p.user_uid) === String(currentUser.uid) || p.author === currentUser.name);
+      
+      // 🌟 修复：严谨的“我的动态”筛选，必须 user_uid 严格相等，且不为空
+      const myPosts = allPostsData.filter(p => {
+        if (p.user_uid) {
+          return String(p.user_uid) === String(currentUser.uid);
+        }
+        return p.author === currentUser.name;
+      });
       renderPostList(myPosts, allCommentsData, container);
     }
 
@@ -705,12 +716,10 @@
       renderPostList(filtered, allCommentsData, container);
     }
 
-    /* 🌟 新增：点击头像进入对方个人主页/弹窗 */
     function viewUserProfile(targetUid, authorName) {
       let targetProfile = userProfilesMap.get(String(targetUid)) || userProfilesMap.get(String(authorName));
       
-      // 如果是看自己，直接切到个人中心
-      if (String(targetUid) === String(currentUser.uid) || authorName === currentUser.name) {
+      if ((targetUid && String(targetUid) === String(currentUser.uid)) || authorName === currentUser.name) {
         switchMainTab('profile');
         return;
       }
@@ -720,7 +729,6 @@
       document.getElementById('targetUserAvatar').src = (targetProfile && targetProfile.avatar) ? targetProfile.avatar : DEFAULT_AVATAR;
       document.getElementById('targetUserBio').innerText = (targetProfile && targetProfile.bio) ? targetProfile.bio : '这个用户很懒，什么都没写~';
 
-      // 绑定发送私信按钮
       const chatBtn = document.getElementById('startChatBtn');
       chatBtn.onclick = function() {
         closeUserProfileModal();
@@ -747,15 +755,17 @@
 
         const displayUid = post.user_uid || realProfile.uid || '';
         const displayAvatar = realProfile.avatar || DEFAULT_AVATAR;
-        const isAuthorAdmin = realProfile.is_admin || String(displayUid) === '846193';
-        const isMyPost = String(displayUid) === String(currentUser.uid) || post.author === currentUser.name;
+        
+        // 🌟 修复：严格判断只有真正的 UID 846193 才是开发者
+        const isAuthorAdmin = String(displayUid) === '846193' || (realProfile.is_admin && String(displayUid) === '846193');
+        
+        const isMyPost = (post.user_uid && String(post.user_uid) === String(currentUser.uid)) || (!post.user_uid && post.author === currentUser.name);
         const isLiked = !!myLikedPostsMap[post.id];
         const isPinnedBool = post.is_pinned === true || post.is_pinned === 'true';
 
         return `
           <div class="post-card ${isPinnedBool ? 'pinned' : ''}">
             <div class="post-header">
-              <!-- 🌟 点击头像/作者名字触发 viewUserProfile 动态查看个人信息及发起私信 -->
               <div class="author-info" onclick="viewUserProfile('${displayUid}', '${escapeHtml(post.author)}')">
                 <img class="user-avatar-img" src="${displayAvatar}" onerror="handleAvatarError(this)">
                 <div>
