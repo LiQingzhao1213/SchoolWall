@@ -337,6 +337,68 @@
       cursor: pointer; 
       box-shadow: 0 6px 16px rgba(255, 71, 126, 0.35); 
     }
+        /* ==================== 7. 微信风聊天对话框样式 ==================== */
+    .chat-box { 
+      height: 280px; 
+      overflow-y: auto; 
+      background: rgba(245, 245, 245, 0.7); 
+      border: 1px solid rgba(255, 255, 255, 0.8); 
+      border-radius: 16px; 
+      padding: 12px; 
+      margin-bottom: 12px; 
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 80%;
+    }
+
+    /* 对方发送的消息（靠左） */
+    .msg-row.other {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    /* 我发送的消息（靠右） */
+    .msg-row.me {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .msg-sender-name {
+      font-size: 10px;
+      color: #999;
+      margin-bottom: 3px;
+      padding: 0 4px;
+    }
+
+    .msg-bubble {
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.4;
+      word-break: break-word;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+    }
+
+    /* 对方气泡样式（左侧：白色） */
+    .msg-row.other .msg-bubble {
+      background: #ffffff;
+      color: #333;
+      border-top-left-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* 自己气泡样式（右侧：粉色渐变/微信绿风） */
+    .msg-row.me .msg-bubble {
+      background: linear-gradient(135deg, #ff758c, #ff477e);
+      color: #ffffff;
+      border-top-right-radius: 2px;
+    }
 
     /* Tab 选项卡 */
     .tab-bar { display: flex; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 16px; }
@@ -577,10 +639,10 @@
       }
     }
 
-    async function loadChatHistory() {
+        async function loadChatHistory() {
       const friend = document.getElementById('friendSelect').value;
       const historyBox = document.getElementById('chatHistory');
-      if (!friend) { historyBox.innerHTML = '请选择聊天对象'; return; }
+      if (!friend) { historyBox.innerHTML = '<div style="text-align:center; color:#aaa; font-size:12px; padding-top:20px;">请选择聊天对象</div>'; return; }
 
       const { data } = await _supabase.from('chat_messages')
         .select('*')
@@ -588,15 +650,21 @@
         .order('id', { ascending: true });
 
       if (!data || data.length === 0) {
-        historyBox.innerHTML = '暂无消息，开始聊两句吧~';
+        historyBox.innerHTML = '<div style="text-align:center; color:#aaa; font-size:12px; padding-top:20px;">暂无消息，开始聊两句吧~</div>';
         return;
       }
 
-      historyBox.innerHTML = data.map(m => `
-        <div class="msg-item ${m.sender === currentUser ? 'me' : ''}">
-          <strong>${escapeHtml(m.sender)}:</strong> ${escapeHtml(m.message)}
-        </div>
-      `).join('');
+      historyBox.innerHTML = data.map(m => {
+        const isMe = m.sender === currentUser;
+        return `
+          <div class="msg-row ${isMe ? 'me' : 'other'}">
+            <span class="msg-sender-name">${escapeHtml(m.sender)}</span>
+            <div class="msg-bubble">${escapeHtml(m.message)}</div>
+          </div>
+        `;
+      }).join('');
+      
+      // 自动滚动到底部
       historyBox.scrollTop = historyBox.scrollHeight;
     }
 
@@ -670,7 +738,9 @@
       const liked = localStorage.getItem('wall_liked_posts');
       return liked ? JSON.parse(liked) : [];
     }
-        async function addComment(postId) {
+
+       // 1. 评论逻辑
+    async function addComment(postId) {
       const input = document.getElementById(`commentInput_${postId}`);
       let content = input.value.trim();
       if (!content) return;
@@ -679,7 +749,6 @@
 
       const { error } = await _supabase.from('comments').insert([{
         post_id: postId,
-        author: currentUser,
         username: currentUser,
         content: content
       }]);
@@ -693,18 +762,24 @@
       await fetchPosts();
     }
 
-
-    // 防重复点赞逻辑
+    // 2. 点击评论作者快捷填充 @回复
+    function prepareReply(postId, targetUser) {
+      const input = document.getElementById(`commentInput_${postId}`);
+      if (input) {
+        input.value = `@${targetUser} `;
+        input.focus();
+      }
+    }
+    
+    // 3. 防重复点赞逻辑
     async function likePost(id, currentLikes) {
       const likedPosts = getLikedPosts();
 
-      // 1. 检查当前用户是否已经赞过这个帖子
       if (likedPosts.includes(id)) {
         alert('你已经赞过这条表白啦！💕');
         return;
       }
 
-      // 2. 更新 Supabase 数据库中的点赞数
       const { error } = await _supabase
         .from('posts')
         .update({ likes: (currentLikes || 0) + 1 })
@@ -715,17 +790,15 @@
         return;
       }
 
-      // 3. 将这个帖子的 ID 记录到本地
       likedPosts.push(id);
       localStorage.setItem('wall_liked_posts', JSON.stringify(likedPosts));
-
-      // 4. 重新刷新页面，更新点赞状态和数量
       fetchPosts();
     }
 
+    // 4. 渲染主列表（左上角 To，右下角：时间在前，发帖人在后）
     async function fetchPosts() {
       const container = document.getElementById('postsContainer');
-      const likedPosts = getLikedPosts(); // 读取已赞列表
+      const likedPosts = getLikedPosts();
 
       const { data: posts, error } = await _supabase
         .from('posts')
@@ -742,42 +815,52 @@
         return;
       }
 
-      const { data: comments } = await _supabase.from('comments').select('*');
+      const { data: comments } = await _supabase.from('comments').select('*').order('id', { ascending: true });
 
       container.innerHTML = posts.map(post => {
         const postComments = comments ? comments.filter(c => c.post_id === post.id) : [];
         const postAuthor = post.author || post.username || '热心同学';
-        
-        // 判断当前帖子是否已经被当前设备点赞过
         const isLiked = likedPosts.includes(post.id);
 
+        // 渲染评论列表（包含评论时间 & 点击回复）
         const commentsHtml = postComments.map(c => {
           const commentAuthor = c.author || c.username || '热心同学';
+          const commentTime = formatBeijingTime(c.created_at);
           return `
-            <div class="comment-item">
+            <div class="comment-item" style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span class="comment-author" onclick="applyChat('${escapeHtml(commentAuthor)}')">${escapeHtml(commentAuthor)}</span>: 
+                <span class="comment-author" onclick="prepareReply(${post.id}, '${escapeHtml(commentAuthor)}')">@${escapeHtml(commentAuthor)}</span>: 
                 <span>${escapeHtml(c.content)}</span>
               </div>
-              ${commentAuthor !== currentUser ? `<button class="reply-btn" onclick="privateReply('${escapeHtml(commentAuthor)}')">私信</button>` : ''}
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:10px; color:#bbb;">${commentTime}</span>
+                ${commentAuthor !== currentUser ? `<button class="reply-btn" onclick="prepareReply(${post.id}, '${escapeHtml(commentAuthor)}')">回复</button>` : ''}
+              </div>
             </div>
           `;
         }).join('');
 
         return `
           <div class="post-card">
-            <div class="post-header">
-              <span class="post-author" onclick="applyChat('${escapeHtml(postAuthor)}')">@${escapeHtml(postAuthor)}</span>
+            <!-- 头部：左上角放表白对象 (To: xxx) -->
+            <div class="post-header" style="justify-content: flex-start;">
               <span class="post-target">To: ${escapeHtml(post.target)}</span>
             </div>
+            
             <div class="post-content">${escapeHtml(post.content)}</div>
+            
+            <!-- 底部：左侧点赞，右侧：时间在前，发帖人在后 -->
             <div class="post-footer">
               <button class="action-btn" style="${isLiked ? 'background:rgba(255,182,193,0.8); color:#d6336c;' : ''}" onclick="likePost(${post.id}, ${post.likes || 0})">
                 ${isLiked ? '❤️ 已赞' : '❤️ 点赞'} (${post.likes || 0})
               </button>
-              <span style="font-size:11px; color:#aaa;">${formatBeijingTime(post.created_at)}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:11px; color:#aaa;">${formatBeijingTime(post.created_at)}</span>
+                <span class="post-author" onclick="applyChat('${escapeHtml(postAuthor)}')">From: @${escapeHtml(postAuthor)}</span>
+              </div>
             </div>
             
+            <!-- 评论区 -->
             <div class="comments-section">
               <div id="commentList_${post.id}">
                 ${commentsHtml || '<div style="font-size:11px; color:#bbb;">暂无评论，快来互动吧...</div>'}
@@ -790,10 +873,6 @@
           </div>
         `;
       }).join('');
-    }
-
-    function privateReply(targetUser) {
-      applyChat(targetUser);
     }
 
     // 7. 初始化启动
