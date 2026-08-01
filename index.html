@@ -4,375 +4,221 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>校园社区</title>
-  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* 全局 iOS 苹果极简设计语言 */
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-      -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      user-select: none;
-    }
-
+    /* ===== 全局 iOS 苹果极简设计语言 ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif; user-select: none; }
     input, textarea { user-select: text; }
+    body { background: linear-gradient(160deg, #e0eafc, #cfdef3, #eef2f3); background-attachment: fixed; padding: 12px; padding-bottom: 100px; color: #1c1c1e; min-height: 100vh; overflow-x: hidden; }
 
-    body { 
-      background: linear-gradient(160deg, #e0eafc, #cfdef3, #eef2f3);
-      background-attachment: fixed;
-      padding: 12px; 
-      padding-bottom: 100px; 
-      color: #1c1c1e; 
-      min-height: 100vh;
-      overflow-x: hidden;
+    /* ===== 🍏 iOS 加载动画（替换"加载中..."） ===== */
+    .ios-loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(245,245,247,0.85); backdrop-filter: blur(30px) saturate(200%); -webkit-backdrop-filter: blur(30px) saturate(200%);
+      z-index: 9999; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1);
     }
+    .ios-loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    .ios-loading-content { display: flex; flex-direction: column; align-items: center; gap: 14px; animation: loadingFadeIn 0.4s ease; }
+    @keyframes loadingFadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .ios-spinner {
+      width: 56px; height: 56px; border: 4px solid rgba(0,0,0,0.08); border-top: 4px solid #007aff;
+      border-radius: 50%; animation: iosSpin 1s cubic-bezier(0.43,0.77,0.73,0.53) infinite;
+    }
+    @keyframes iosSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .ios-spinner-large { width: 72px; height: 72px; border-width: 5px; }
+    .ios-spinner-label { font-size: 14px; color: #8e8e93; font-weight: 500; letter-spacing: 0.3px; }
 
-    /* 🍏 仿苹果风格开屏/进入网页动画 */
+    /* ===== 🍏 开屏动画 ===== */
     #splashScreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(242, 242, 247, 0.85);
-      backdrop-filter: blur(30px) saturate(200%);
-      -webkit-backdrop-filter: blur(30px) saturate(200%);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: auto;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(242,242,247,0.85); backdrop-filter: blur(30px) saturate(200%); -webkit-backdrop-filter: blur(30px) saturate(200%);
+      z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
     }
+    #splashScreen.fade-out { opacity: 0; transform: scale(1.08); pointer-events: none; }
+    .splash-content { display: flex; flex-direction: column; align-items: center; animation: splashPop 0.8s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+    @keyframes splashPop { 0% { opacity: 0; transform: scale(0.75); } 100% { opacity: 1; transform: scale(1); } }
+    .splash-logo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; box-shadow: 0 12px 36px rgba(0,0,0,0.15), 0 0 0 4px rgba(255,255,255,0.8); margin-bottom: 20px; background: #fff; }
+    .splash-title { font-size: 20px; font-weight: 700; color: #1c1c1e; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .splash-sub { font-size: 13px; color: #8e8e93; font-weight: 500; }
 
-    #splashScreen.fade-out {
-      opacity: 0;
-      transform: scale(1.08);
-      pointer-events: none;
+    /* ===== 🔒 登录/注册模态 ===== */
+    #authOverlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(242,242,247,0.92); backdrop-filter: blur(30px) saturate(190%); -webkit-backdrop-filter: blur(30px) saturate(190%);
+      z-index: 9000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px;
+      animation: authFadeIn 0.4s cubic-bezier(0.16,1,0.3,1);
     }
+    @keyframes authFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .auth-card { width: 100%; max-width: 340px; background: rgba(255,255,255,0.82); border: 1px solid rgba(255,255,255,0.9); border-radius: 28px; padding: 26px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center; }
+    .auth-segmented { display: flex; background: rgba(120,120,128,0.12); border-radius: 12px; padding: 2px; margin-bottom: 20px; }
+    .auth-tab-btn { flex: 1; padding: 6px 0; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #8e8e93; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+    .auth-tab-btn.active { background: #fff; color: #000; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+    .auth-input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .auth-input { width: 100%; background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 12px 14px; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .auth-input:focus { border-color: #007aff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+    .auth-submit-btn { width: 100%; background: #007aff; color: #fff; border: none; padding: 12px; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.15s, background-color 0.15s; }
+    .auth-submit-btn:active { transform: scale(0.97); background-color: #0062cc; }
 
-    .splash-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      animation: splashPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    @keyframes splashPop {
-      0% { opacity: 0; transform: scale(0.75); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    .splash-logo {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.8);
-      margin-bottom: 20px;
-      background: #ffffff;
-    }
-
-    .splash-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1c1c1e;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-
-    .splash-sub {
-      font-size: 13px;
-      color: #8e8e93;
-      font-weight: 500;
-    }
-
-    /* 通用 SVG 图标居中对齐处理 */
-    .icon-svg {
-      width: 1em;
-      height: 1em;
-      vertical-align: -0.125em;
-      fill: currentColor;
-      display: inline-block;
-    }
-
+    /* ===== SVG 图标 ===== */
+    .icon-svg { width: 1em; height: 1em; vertical-align: -0.125em; fill: currentColor; display: inline-block; }
     .page-tab { display: none; }
-    .page-tab.active-page {
-      display: block;
-      animation: pageSlideIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1);
-    }
+    .page-tab.active-page { display: block; animation: pageSlideIn 0.35s cubic-bezier(0.18,0.89,0.32,1); }
+    @keyframes pageSlideIn { from { opacity: 0; transform: translateY(12px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    @keyframes pageSlideIn {
-      from { opacity: 0; transform: translateY(12px) scale(0.99); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
+    /* ===== 顶部搜索栏 ===== */
+    header { position: sticky; top: 10px; z-index: 90; margin-bottom: 14px; transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1), opacity 0.3s ease; }
+    header.scroll-hidden { transform: translateY(-80px); opacity: 0; pointer-events: none; }
+    .search-bar-box { display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.75); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255,255,255,0.8); border-radius: 18px; padding: 10px 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.05); gap: 8px; }
+    .search-bar-box .search-icon { color: #8e8e93; font-size: 16px; }
+    .search-bar-box input { border: none; background: transparent; width: 100%; font-size: 14px; outline: none; color: #1c1c1e; }
 
-    /* 顶部搜索栏与隐藏动画 */
-    header { 
-      position: sticky; 
-      top: 10px; 
-      z-index: 90; 
-      margin-bottom: 14px; 
-      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease; 
-    }
-    header.scroll-hidden {
-      transform: translateY(-80px);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .search-bar-box {
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 18px;
-      padding: 10px 16px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05); gap: 8px;
-    }
-    .search-bar-box .search-icon {
-      color: #8e8e93; font-size: 16px;
-    }
-    .search-bar-box input { border: none; background: transparent; width: 100%; font-size: 14px; outline: none; color: #1c1c1e; text-align: left; }
-
-    /* 帖子卡片 */
-    .post-card { 
-      background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(25px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.8); padding: 16px; border-radius: 20px; 
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03); margin-bottom: 14px; position: relative;
-    }
-    .post-card.pinned { 
-      border: 1.5px solid rgba(0, 122, 255, 0.5); 
-      background: rgba(255, 255, 255, 0.88); 
-      box-shadow: 0 8px 28px rgba(0, 122, 255, 0.08);
-    }
+    /* ===== 帖子卡片 ===== */
+    .post-card { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255,255,255,0.8); padding: 16px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.03); margin-bottom: 14px; position: relative; }
+    .post-card.pinned { border: 1.5px solid rgba(0,122,255,0.5); background: rgba(255,255,255,0.88); box-shadow: 0 8px 28px rgba(0,122,255,0.08); }
     .pin-badge { font-size: 10px; background: #007aff; color: #fff; padding: 2px 6px; border-radius: 6px; font-weight: 600; margin-right: 4px; display: inline-flex; align-items: center; gap: 2px; }
     .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .author-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .user-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e5e5ea; border: 1px solid rgba(255, 255, 255, 0.9); }
+    .user-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e5e5ea; border: 1px solid rgba(255,255,255,0.9); }
     .post-author-name { font-weight: 600; font-size: 14px; color: #000; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-
-    .dev-badge {
-      font-size: 10px; background: linear-gradient(135deg, #ff2d55, #5856d6);
-      color: #ffffff; padding: 2px 7px; border-radius: 8px; font-weight: 700;
-      box-shadow: 0 2px 6px rgba(255, 45, 85, 0.3); letter-spacing: 0.5px;
-    }
-
+    .dev-badge { font-size: 10px; background: linear-gradient(135deg, #ff2d55, #5856d6); color: #fff; padding: 2px 7px; border-radius: 8px; font-weight: 700; box-shadow: 0 2px 6px rgba(255,45,85,0.3); letter-spacing: 0.5px; }
     .post-time { font-size: 11px; color: #8e8e93; margin-top: 2px; }
-    .mini-action-group { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.03); padding: 3px; border-radius: 10px; }
+    .mini-action-group { display: flex; gap: 4px; background: rgba(0,0,0,0.03); padding: 3px; border-radius: 10px; }
     .mini-btn { border: none; background: transparent; padding: 3px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; color: #8e8e93; display: inline-flex; align-items: center; justify-content: center; }
     .mini-btn:hover { color: #ff3b30; }
-
     .post-content { font-size: 14px; line-height: 1.5; margin-bottom: 10px; word-break: break-word; color: #1c1c1e; user-select: text; }
     .post-image { width: 100%; max-height: 260px; object-fit: cover; border-radius: 14px; margin-bottom: 10px; }
-    .post-footer { display: flex; justify-content: space-between; align-items: center; border-top: 0.5px solid rgba(0, 0, 0, 0.05); padding-top: 8px; }
-
-    .action-btn { 
-      background: rgba(0, 0, 0, 0.04); border: none; color: #007aff; padding: 6px 12px; 
-      border-radius: 12px; font-size: 12px; font-weight: 500; cursor: pointer; 
-      display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;
-    }
+    .post-footer { display: flex; justify-content: space-between; align-items: center; border-top: 0.5px solid rgba(0,0,0,0.05); padding-top: 8px; }
+    .action-btn { background: rgba(0,0,0,0.04); border: none; color: #007aff; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s; }
     .action-btn:active { transform: scale(0.92); }
-    .action-btn.liked { background: rgba(255, 59, 48, 0.12); color: #ff3b30; font-weight: 600; }
+    .action-btn.liked { background: rgba(255,59,48,0.12); color: #ff3b30; font-weight: 600; }
 
-    /* 评论栏优化 */
-    .comments-section { margin-top: 10px; background: rgba(255, 255, 255, 0.45); padding: 8px 12px; border-radius: 12px; }
-    .comment-item { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 6px 0; line-height: 1.4; border-bottom: 0.5px dashed rgba(0, 0, 0, 0.06); }
+    /* ===== 评论 ===== */
+    .comments-section { margin-top: 10px; background: rgba(255,255,255,0.45); padding: 8px 12px; border-radius: 12px; }
+    .comment-item { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 6px 0; line-height: 1.4; border-bottom: 0.5px dashed rgba(0,0,0,0.06); }
     .comment-item:last-child { border-bottom: none; }
     .comment-left { flex: 1; display: flex; align-items: center; gap: 6px; }
     .comment-author { font-weight: 600; color: #007aff; cursor: pointer; }
     .comment-time { font-size: 10px; color: #a1a1a6; margin-left: 6px; }
-
     .comment-input-group { display: flex; gap: 6px; margin-top: 6px; }
-    .comment-input { flex: 1; background: rgba(255, 255, 255, 0.8); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 5px 10px; font-size: 12px; outline: none; }
+    .comment-input { flex: 1; background: rgba(255,255,255,0.8); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 5px 10px; font-size: 12px; outline: none; }
     .comment-btn { background: #007aff; color: #fff; border: none; padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
-    /* 私信模块 */
+    /* ===== 私信模块 ===== */
     .chat-search-row { display: flex; gap: 8px; margin-bottom: 14px; }
-    .chat-search-input { flex: 1; background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 14px; padding: 10px 14px; font-size: 13px; outline: none; }
-    .chat-search-btn { background: rgba(0, 122, 255, 0.15); color: #007aff; border: none; padding: 0 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
-
-    .chat-list-title { font-size: 12px; font-weight: 600; color: #8e8e93; margin-bottom: 10px; padding-left: 2px; }
-
-    .chat-item-card {
-      background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(15px);
-      border-radius: 18px; padding: 12px 14px; margin-bottom: 10px;
-      display: flex; align-items: center; gap: 12px; cursor: pointer;
-      border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-      transition: transform 0.15s ease, background 0.15s ease;
-      position: relative;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-      touch-action: manipulation;
-    }
-    .chat-item-card:active { transform: scale(0.97); background: rgba(255, 255, 255, 0.9); }
-    
+    .chat-search-input { flex: 1; background: rgba(255,255,255,0.65); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.8); border-radius: 14px; padding: 10px 14px; font-size: 13px; outline: none; }
+    .chat-search-btn { background: rgba(0,122,255,0.15); color: #007aff; border: none; padding: 0 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .chat-list-title { font-size: 12px; font-weight: 600; color: #8e8e93; margin-bottom: 10px; padding-left: 2px; display: flex; align-items: center; gap: 6px; }
+    .chat-item-card { background: rgba(255,255,255,0.75); backdrop-filter: blur(15px); border-radius: 18px; padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: transform 0.15s ease, background 0.15s ease; position: relative; user-select: none; touch-action: manipulation; }
+    .chat-item-card:active { transform: scale(0.97); background: rgba(255,255,255,0.9); }
+    .chat-item-card.has-unread { background: rgba(255,255,255,0.95); }
     .chat-avatar-wrapper { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
     .chat-item-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #e5e5ea; pointer-events: none; }
-    
-    .unread-badge {
-      position: absolute; top: -3px; right: -3px;
-      background: #ff3b30; color: #ffffff;
-      font-size: 10px; font-weight: 700;
-      min-width: 18px; height: 18px; line-height: 18px;
-      border-radius: 9px; text-align: center; padding: 0 4px;
-      box-shadow: 0 2px 6px rgba(255, 59, 48, 0.4);
-      border: 1.5px solid #ffffff;
-      animation: badgePop 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    }
+    .unread-badge { position: absolute; top: -3px; right: -3px; background: #ff3b30; color: #fff; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; line-height: 18px; border-radius: 9px; text-align: center; padding: 0 4px; box-shadow: 0 2px 6px rgba(255,59,48,0.4); border: 2px solid #fff; animation: badgePop 0.25s cubic-bezier(0.18,0.89,0.32,1.28); }
     @keyframes badgePop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-
     .chat-item-info { flex: 1; overflow: hidden; pointer-events: none; }
     .chat-item-name { font-weight: 700; font-size: 14px; color: #1c1c1e; margin-bottom: 2px; }
+    .chat-item-name.unread-name { font-weight: 800; color: #000; }
     .chat-item-lastmsg { font-size: 12px; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-item-lastmsg.unread-msg { color: #ff3b30; font-weight: 500; }
+    .chat-item-time { font-size: 10px; color: #a1a1a6; flex-shrink: 0; margin-left: 6px; }
+    .chat-item-time.unread-time { color: #ff3b30; font-weight: 600; }
 
-    .chat-dialog-card {
-      background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(25px) saturate(180%);
-      -webkit-backdrop-filter: blur(25px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 24px;
-      padding: 16px; min-height: 72vh; display: flex; flex-direction: column;
-    }
+    .chat-dialog-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255,255,255,0.85); border-radius: 24px; padding: 16px; min-height: 72vh; display: flex; flex-direction: column; }
     .chat-dialog-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .chat-back-btn { background: rgba(0, 122, 255, 0.12); color: #007aff; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; }
+    .chat-back-btn { background: rgba(0,122,255,0.12); color: #007aff; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; }
     .chat-dialog-title { font-size: 16px; font-weight: 700; color: #1c1c1e; }
-
     .chat-messages-container { flex: 1; overflow-y: auto; padding: 8px 0; display: flex; flex-direction: column; gap: 12px; max-height: 52vh; }
-    
-    .msg-bubble { 
-      max-width: 78%; padding: 8px 12px; border-radius: 18px; 
-      font-size: 14px; line-height: 1.4; word-break: break-word; 
-      cursor: pointer; user-select: text; position: relative;
-      display: inline-flex; flex-direction: column;
-    }
-    .msg-bubble.other { align-self: flex-start; background: rgba(255, 255, 255, 0.95); color: #1c1c1e; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-    .msg-bubble.me { align-self: flex-end; background: #007aff; color: #ffffff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25); }
-    
-    .msg-meta-bar {
-      align-self: flex-end; display: flex; align-items: center; gap: 3px; 
-      font-size: 10px; margin-top: 3px; opacity: 0.8;
-    }
-    .msg-bubble.me .msg-meta-bar { color: rgba(255, 255, 255, 0.85); }
+    .msg-bubble { max-width: 78%; padding: 8px 12px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-break: break-word; cursor: pointer; user-select: text; position: relative; display: inline-flex; flex-direction: column; }
+    .msg-bubble.other { align-self: flex-start; background: rgba(255,255,255,0.95); color: #1c1c1e; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .msg-bubble.me { align-self: flex-end; background: #007aff; color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0,122,255,0.25); }
+    .msg-meta-bar { align-self: flex-end; display: flex; align-items: center; gap: 3px; font-size: 10px; margin-top: 3px; opacity: 0.8; }
+    .msg-bubble.me .msg-meta-bar { color: rgba(255,255,255,0.85); }
     .msg-bubble.other .msg-meta-bar { color: #8e8e93; }
-
     .tg-read-status { display: inline-flex; align-items: center; font-size: 12px; }
-    .tg-read-status.read { color: #50e3c2; }
-
+    .tg-read-status.read { color: #34b7f1; }
+    .tg-read-status.sent { color: #8e8e93; }
+    .msg-bubble.me .tg-read-status.read { color: #34b7f1; }
+    .msg-bubble.me .tg-read-status.sent { color: rgba(255,255,255,0.7); }
     .chat-send-bar { display: flex; gap: 8px; margin-top: 12px; }
-    .chat-msg-input { flex: 1; background: rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 10px 14px; font-size: 13px; outline: none; }
+    .chat-msg-input { flex: 1; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 10px 14px; font-size: 13px; outline: none; }
     .chat-send-btn { background: #007aff; color: #fff; border: none; padding: 0 18px; border-radius: 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
-    /* 🍏 骨架屏加载 */
-    .ios-skeleton-card {
-      background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
-      border-radius: 18px; padding: 12px 14px; margin-bottom: 10px;
-      display: flex; align-items: center; gap: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.6);
-    }
+    /* ===== 🍏 骨架屏 ===== */
+    .ios-skeleton-card { background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); border-radius: 18px; padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,0.6); }
     .skeleton-avatar { width: 44px; height: 44px; border-radius: 50%; background: #e5e5ea; }
     .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 8px; }
     .skeleton-line { height: 12px; border-radius: 6px; background: #e5e5ea; }
     .skeleton-line.short { width: 40%; }
     .skeleton-line.long { width: 75%; }
-
-    .shimmer {
-      background: linear-gradient(90deg, #e5e5ea 25%, #f2f2f7 37%, #e5e5ea 63%);
-      background-size: 400% 100%;
-      animation: skeletonShimmer 1.4s ease infinite;
-    }
+    .shimmer { background: linear-gradient(90deg, #e5e5ea 25%, #f2f2f7 37%, #e5e5ea 63%); background-size: 400% 100%; animation: skeletonShimmer 1.4s ease infinite; }
     @keyframes skeletonShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-    /* iOS 底部 Dock 栏 */
-    .glass-dock-bar {
-      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-      width: 88%; max-width: 380px; height: 62px; background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 31px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); display: flex; justify-space-around;
-      align-items: center; z-index: 1000; padding: 0 6px;
-      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
-    }
-    .glass-dock-bar.scroll-hidden {
-      transform: translate(-50%, 100px); opacity: 0; pointer-events: none;
-    }
-
-    .dock-indicator {
-      position: absolute; top: 5px; bottom: 5px; left: 6px; width: calc(33.33% - 4px);
-      background: rgba(0, 122, 255, 0.1); border-radius: 26px; z-index: 0;
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .dock-item {
-      position: relative; z-index: 1; display: flex; flex-direction: column; 
-      align-items: center; justify-content: center; flex: 1; height: 100%; 
-      color: #8e8e93; font-size: 10px; font-weight: 500; cursor: pointer; border: none; background: transparent;
-    }
+    /* ===== 底部 Dock 栏 ===== */
+    .glass-dock-bar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); width: 88%; max-width: 380px; height: 62px; background: rgba(255,255,255,0.8); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255,255,255,0.7); border-radius: 31px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); display: flex; align-items: center; z-index: 1000; padding: 0 6px; transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1), opacity 0.3s ease; }
+    .glass-dock-bar.scroll-hidden { transform: translate(-50%, 100px); opacity: 0; pointer-events: none; }
+    .dock-indicator { position: absolute; top: 5px; bottom: 5px; left: 6px; width: calc(33.33% - 4px); background: rgba(0,122,255,0.1); border-radius: 26px; z-index: 0; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    .dock-item { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; color: #8e8e93; font-size: 10px; font-weight: 500; cursor: pointer; border: none; background: transparent; }
+    .dock-item .dock-icon-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; }
     .dock-item .dock-icon { font-size: 20px; margin-bottom: 2px; display: flex; align-items: center; justify-content: center; }
     .dock-item.active { color: #007aff; font-weight: 600; }
 
-    .fab-btn { 
-      position: fixed; bottom: 90px; right: 22px;
-      background: #007aff; color: #ffffff; 
-      width: 46px; height: 46px; border-radius: 50%; 
-      display: flex; align-items: center; justify-content: center; 
-      box-shadow: 0 6px 18px rgba(0, 122, 255, 0.35); 
-      border: none; cursor: pointer; z-index: 999;
-      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
-    }
+    /* ===== 🔴 底部导航红点（修正位置） ===== */
+    .nav-badge { position: absolute; top: -5px; right: -8px; background: #ff3b30; color: #fff; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; line-height: 18px; border-radius: 9px; text-align: center; padding: 0 4px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(255,59,48,0.4); animation: badgePop 0.25s cubic-bezier(0.18,0.89,0.32,1.28); }
+    .nav-badge.hidden { display: none; }
+
+    /* ===== FAB 按钮 ===== */
+    .fab-btn { position: fixed; bottom: 90px; right: 22px; background: #007aff; color: #fff; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,122,255,0.35); border: none; cursor: pointer; z-index: 999; transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1), opacity 0.3s ease; }
     .fab-btn:active { transform: scale(0.9); }
     .fab-btn.scroll-hidden { transform: translateY(100px) scale(0.8); opacity: 0; pointer-events: none; }
 
-    #profilePage { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px); border-radius: 22px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.8); }
+    /* ===== 个人中心 ===== */
+    #profilePage { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px); border-radius: 22px; padding: 20px; border: 1px solid rgba(255,255,255,0.8); }
 
-    /* 通用 iOS Modal 弹窗 */
-    .modal { 
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-      z-index: 2000; justify-content: center; align-items: center; 
-    }
-    
-    .modal-content { 
-      background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(25px); 
-      width: 86%; max-width: 330px; border-radius: 22px; padding: 20px; box-shadow: 0 16px 32px rgba(0,0,0,0.12); 
-      border: 1px solid rgba(255, 255, 255, 0.9); text-align: center; animation: modalPop 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    }
+    /* ===== Modal 弹窗 ===== */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-content { background: rgba(255,255,255,0.88); backdrop-filter: blur(25px); width: 86%; max-width: 330px; border-radius: 22px; padding: 20px; box-shadow: 0 16px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.9); text-align: center; animation: modalPop 0.25s cubic-bezier(0.18,0.89,0.32,1.28); }
     @keyframes modalPop { 0% { opacity: 0; transform: scale(0.85); } 100% { opacity: 1; transform: scale(1); } }
 
-    /* iOS ActionSheet 菜单 */
-    .ios-action-sheet-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      z-index: 2500; justify-content: flex-end; flex-direction: column;
-    }
-    .ios-action-sheet { width: 94%; max-width: 400px; margin: 0 auto 16px auto; animation: sheetSlideUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1); }
+    /* ===== ActionSheet ===== */
+    .ios-action-sheet-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 2500; justify-content: flex-end; flex-direction: column; }
+    .ios-action-sheet { width: 94%; max-width: 400px; margin: 0 auto 16px auto; animation: sheetSlideUp 0.3s cubic-bezier(0.18,0.89,0.32,1); }
     @keyframes sheetSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-    .ios-sheet-group { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); border-radius: 16px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.8); }
-    .ios-sheet-btn { width: 100%; padding: 15px; background: transparent; border: none; font-size: 16px; font-weight: 500; color: #007aff; text-align: center; border-bottom: 0.5px solid rgba(0, 0, 0, 0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .ios-sheet-group { background: rgba(255,255,255,0.85); backdrop-filter: blur(25px); border-radius: 16px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.8); }
+    .ios-sheet-btn { width: 100%; padding: 15px; background: transparent; border: none; font-size: 16px; font-weight: 500; color: #007aff; text-align: center; border-bottom: 0.5px solid rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .ios-sheet-btn.danger { color: #ff3b30; font-weight: 600; }
-    .ios-sheet-btn:active { background: rgba(0, 0, 0, 0.05); }
-
-    .ios-sheet-cancel { width: 100%; padding: 15px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(25px); border-radius: 16px; border: none; font-size: 16px; font-weight: 700; color: #007aff; cursor: pointer; }
+    .ios-sheet-btn:active { background: rgba(0,0,0,0.05); }
+    .ios-sheet-cancel { width: 100%; padding: 15px; background: rgba(255,255,255,0.95); backdrop-filter: blur(25px); border-radius: 16px; border: none; font-size: 16px; font-weight: 700; color: #007aff; cursor: pointer; }
 
     .ios-btn-group { display: flex; gap: 8px; margin-top: 16px; }
     .ios-btn { flex: 1; padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; }
-    .ios-btn-cancel { background: rgba(0, 0, 0, 0.06); color: #007aff; }
-    .ios-btn-danger { background: #ff3b30; color: #ffffff; }
+    .ios-btn-cancel { background: rgba(0,0,0,0.06); color: #007aff; }
+    .ios-btn-danger { background: #ff3b30; color: #fff; }
 
-    .input-box { width: 100%; background: rgba(0, 0, 0, 0.04); border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; outline: none; }
+    .input-box { width: 100%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; outline: none; }
     .btn-submit { width: 100%; background: #007aff; color: white; border: none; padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
     .profile-avatar-lg { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2.5px solid #007aff; cursor: pointer; }
 
-    .pin-checkbox-label {
-      display: flex; align-items: center; gap: 6px; font-size: 13px; color: #007aff; margin-bottom: 10px; font-weight: 500; cursor: pointer;
-    }
+    .pin-checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #007aff; margin-bottom: 10px; font-weight: 500; cursor: pointer; }
+
+    /* ===== Toast 通知 ===== */
+    .toast-notification { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.75); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 13px; font-weight: 500; z-index: 3000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; max-width: 90%; text-align: center; }
+    .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast-notification.clickable { pointer-events: auto; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <!-- 🍏 苹果开屏动画界面（精准修复校徽显示） -->
+  <!-- 🍏 iOS 加载动画（全局） -->
+  <div id="iosLoadingOverlay" class="ios-loading-overlay hidden">
+    <div class="ios-loading-content">
+      <div class="ios-spinner ios-spinner-large"></div>
+      <div class="ios-spinner-label" id="loadingLabel">载入中…</div>
+    </div>
+  </div>
+
+  <!-- 🍏 开屏动画 -->
   <div id="splashScreen">
     <div class="splash-content">
       <img id="splashLogoImg" class="splash-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23002b80' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='38' fill='none' stroke='%23002b80' stroke-width='2'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='%23002b80' font-weight='bold'%3E宿州二中%3C/text%3E%3C/svg%3E" alt="校徽" onerror="this.onerror=null;">
@@ -381,71 +227,57 @@
     </div>
   </div>
 
-  <!-- SVG 定义库 -->
-  <svg style="display: none;">
+  <!-- 🔒 登录/注册 -->
+  <div id="authOverlay" style="display:none;">
+    <div class="auth-card">
+      <div style="font-size:20px; font-weight:700; margin-bottom:4px;">校园社区</div>
+      <div style="font-size:12px; color:#8e8e93; margin-bottom:18px;">认证中心</div>
+      <div class="auth-segmented">
+        <button id="tabLogin" class="auth-tab-btn active" onclick="switchAuthTab('login')">登录</button>
+        <button id="tabRegister" class="auth-tab-btn" onclick="switchAuthTab('register')">注册账号</button>
+      </div>
+      <form id="loginForm" onsubmit="handleAuthSubmit(event, 'login')">
+        <div class="auth-input-group">
+          <input type="text" id="loginUid" class="auth-input" placeholder="输入 6 位数字 UID" pattern="\d{6}" maxlength="6" required>
+          <input type="password" id="loginPassword" class="auth-input" placeholder="输入密码（≥8位）" required>
+        </div>
+        <button type="submit" class="auth-submit-btn">登 录</button>
+      </form>
+      <form id="registerForm" onsubmit="handleAuthSubmit(event, 'register')" style="display:none;">
+        <div class="auth-input-group">
+          <input type="text" id="regName" class="auth-input" placeholder="设定你的名字" required>
+          <input type="password" id="regPassword" class="auth-input" placeholder="设定密码（≥8位，含字母+数字）" required>
+          <input type="password" id="regConfirmPassword" class="auth-input" placeholder="确认二次密码" required>
+        </div>
+        <button type="submit" class="auth-submit-btn">创建新账号</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SVG 图标库 -->
+  <svg style="display:none;">
     <defs>
-      <!-- 🔍 搜索 -->
-      <g id="svg-search">
-        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-      </g>
-      <!-- 💬 论坛对话框 -->
-      <g id="svg-forum">
-        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
-      </g>
-      <!-- ✈️ 私信 / 纸飞机 -->
-      <g id="svg-chat">
-        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-      </g>
-      <!-- 👤 个人 / 我的 -->
-      <g id="svg-profile">
-        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-      </g>
-      <!-- 📌 置顶 -->
-      <g id="svg-pin">
-        <path d="M16 9V4l1 0V2H7v2l1 0v5L6 11v2h5v7l1 1 1-1v-7h5v-2l-2-2z"/>
-      </g>
-      <!-- 🗑️ 删除 / 垃圾桶 -->
-      <g id="svg-trash">
-        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-      </g>
-      <!-- ✏️ 编辑 -->
-      <g id="svg-edit">
-        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-      </g>
-      <!-- ⚡ 闪电授权 -->
-      <g id="svg-bolt">
-        <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
-      </g>
-      <!-- 🤍 空心心型 -->
-      <g id="svg-heart-outline">
-        <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/>
-      </g>
-      <!-- ❤️ 实心心型 -->
-      <g id="svg-heart-filled">
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-      </g>
-      <!-- 扫雷/清空扫把 -->
-      <g id="svg-broom">
-        <path d="M19.36 2.72l-3.97 3.97 3.92 3.92 3.97-3.97c.4-.4.4-1.05 0-1.45l-2.47-2.47c-.4-.4-1.05-.4-1.45 0zM14 8.08l-9.1 9.1c-.2.2-.31.47-.31.76v3.06c0 .55.45 1 1 1h3.06c.29 0 .56-.11.76-.31l9.1-9.1-4.51-4.51z"/>
-      </g>
-      <!-- ↺ 撤回 -->
-      <g id="svg-undo">
-        <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
-      </g>
-      <!-- ✓ 单勾 -->
-      <g id="svg-check-single">
-        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-      </g>
-      <!-- ✓✓ 双勾 -->
-      <g id="svg-check-double">
-        <path d="M18c-.2 0-.41-.08-.56-.23l-7.44-7.44 1.41-1.41 6.03 6.03 9.6-9.6 1.41 1.41-10.44 10.44c-.15.15-.36.23-.56.23zm-6 0c-.2 0-.41-.08-.56-.23l-5.44-5.44 1.41-1.41 4.03 4.03 2.03-2.03 1.41 1.41-3.44 3.44c-.15.15-.36.23-.56.23z"/>
-      </g>
-      <!-- + 加号 -->
-      <g id="svg-plus">
-        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-      </g>
+      <g id="svg-search"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></g>
+      <g id="svg-forum"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></g>
+      <g id="svg-chat"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></g>
+      <g id="svg-profile"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></g>
+      <g id="svg-pin"><path d="M16 9V4l1 0V2H7v2l1 0v5L6 11v2h5v7l1 1 1-1v-7h5v-2l-2-2z"/></g>
+      <g id="svg-trash"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></g>
+      <g id="svg-edit"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></g>
+      <g id="svg-bolt"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></g>
+      <g id="svg-heart-outline"><path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/></g>
+      <g id="svg-heart-filled"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></g>
+      <g id="svg-broom"><path d="M19.36 2.72l-3.97 3.97 3.92 3.92 3.97-3.97c.4-.4.4-1.05 0-1.45l-2.47-2.47c-.4-.4-1.05-.4-1.45 0zM14 8.08l-9.1 9.1c-.2.2-.31.47-.31.76v3.06c0 .55.45 1 1 1h3.06c.29 0 .56-.11.76-.31l9.1-9.1-4.51-4.51z"/></g>
+      <g id="svg-undo"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></g>
+      <g id="svg-check-single"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></g>
+      <g id="svg-check-double"><path d="M18c-.2 0-.41-.08-.56-.23l-7.44-7.44 1.41-1.41 6.03 6.03 9.6-9.6 1.41 1.41-10.44 10.44c-.15.15-.36.23-.56.23zm-6 0c-.2 0-.41-.08-.56-.23l-5.44-5.44 1.41-1.41 4.03 4.03 2.03-2.03 1.41 1.41-3.44 3.44c-.15.15-.36.23-.56.23z"/></g>
+      <g id="svg-plus"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></g>
+      <g id="svg-logout"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></g>
     </defs>
   </svg>
+
+  <!-- Toast 通知容器 -->
+  <div id="toastContainer"></div>
 
   <header id="forumSearchBar">
     <div class="search-bar-box">
@@ -456,7 +288,7 @@
 
   <!-- 1. 论坛主页 -->
   <div id="forumPage" class="page-tab active-page">
-    <div id="postsContainer">加载中...</div>
+    <div id="postsContainer"><!-- 由 JS 渲染 --></div>
   </div>
 
   <!-- 2. 私信界面 -->
@@ -466,11 +298,13 @@
         <input type="number" id="chatSearchUidInput" class="chat-search-input" placeholder="输入对方 6 位数字 UID 精确查找...">
         <button class="chat-search-btn" onclick="playIosClickSound(); searchAndStartChat();">查找</button>
       </div>
-      <div class="chat-list-title">私信列表 (长按联系人弹出操作菜单)</div>
+      <div class="chat-list-title">
+        私信列表
+        <span id="chatListBadge" class="nav-badge hidden" style="position:static; display:none;">0</span>
+      </div>
       <div id="chatFriendsContainer"></div>
     </div>
-
-    <div id="chatDialogView" style="display: none;">
+    <div id="chatDialogView" style="display:none;">
       <div class="chat-dialog-card">
         <div class="chat-dialog-header">
           <button class="chat-back-btn" onclick="playIosClickSound(); backToChatList();">‹ 返回</button>
@@ -479,8 +313,8 @@
         </div>
         <div id="chatMessagesBox" class="chat-messages-container"></div>
         <div class="chat-send-bar">
-          <input type="text" id="chatMsgInput" class="chat-msg-input" placeholder="发送私信..." onkeydown="if(event.key==='Enter') { playIosClickSound(); sendPrivateMsg(); }">
-          <button class="chat-send-btn" onclick="playIosClickSound(); sendPrivateMsg();">发送</button>
+          <input type="text" id="chatMsgInput" class="chat-msg-input" placeholder="发送私信..." onkeydown="if(event.key==='Enter'){playIosClickSound();sendPrivateMsg();}">
+          <button class="chat-send-btn" onclick="playIosClickSound();sendPrivateMsg();">发送</button>
         </div>
       </div>
     </div>
@@ -489,52 +323,58 @@
   <!-- 3. 个人中心 -->
   <div id="profilePage" class="page-tab">
     <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;">
-      <img id="myAvatarDisplay" class="profile-avatar-lg" src="" onerror="handleAvatarError(this)" title="点击修改头像" onclick="playIosClickSound(); openAvatarChoiceModal();">
+      <img id="myAvatarDisplay" class="profile-avatar-lg" src="" onerror="handleAvatarError(this)" title="点击修改头像" onclick="playIosClickSound();openAvatarChoiceModal();">
       <div id="myNameDisplay" style="font-size:17px; font-weight:700;">--</div>
-      <div style="font-size:12px; color:#007aff; font-weight:600;">UID: <span id="myUidDisplay">846193</span></div>
+      <div style="font-size:12px; color:#007aff; font-weight:600;">UID: <span id="myUidDisplay">------</span></div>
       <div id="myBioDisplay" style="font-size:12px; color:#8e8e93;">暂无简介...</div>
-      
-      <div>
-        <span id="adminStatusTag" class="dev-badge" style="display:none;">开发者管理员</span>
-      </div>
-
+      <div><span id="adminStatusTag" class="dev-badge" style="display:none;">开发者管理员</span></div>
       <div style="display:flex; gap:8px; margin-top:6px;">
-        <button class="action-btn" onclick="playIosClickSound(); openEditProfileModal();">
+        <button class="action-btn" onclick="playIosClickSound();openEditProfileModal();">
           <svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-edit"></use></svg> 编辑资料
         </button>
-        <button class="action-btn" style="color:#ff9500;" onclick="playIosClickSound(); openDevAuthModal();">
+        <button class="action-btn" style="color:#ff9500;" onclick="playIosClickSound();openDevAuthModal();">
           <svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-bolt"></use></svg> 开发者授权
+        </button>
+        <button class="action-btn" style="color:#ff3b30;" onclick="playIosClickSound();logoutUser();">
+          <svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-logout"></use></svg> 退出登录
         </button>
       </div>
     </div>
-    <hr style="margin: 14px 0; border: none; border-top: 0.5px solid rgba(0,0,0,0.08);">
+    <hr style="margin:14px 0; border:none; border-top:0.5px solid rgba(0,0,0,0.08);">
     <h4 style="font-size:12px; color:#8e8e93; margin-bottom:10px; padding-left:4px;">我的动态</h4>
-    <div id="myPostsContainer">加载中...</div>
+    <div id="myPostsContainer"></div>
   </div>
 
-  <!-- 🍏 悬浮发帖按钮 -->
-  <button id="mainFabBtn" class="fab-btn" onclick="playIosClickSound(); openPublishModal();">
-    <svg class="icon-svg" style="font-size: 26px;" viewBox="0 0 24 24"><use href="#svg-plus"></use></svg>
+  <!-- FAB 发帖按钮 -->
+  <button id="mainFabBtn" class="fab-btn" onclick="playIosClickSound();openPublishModal();">
+    <svg class="icon-svg" style="font-size:26px;" viewBox="0 0 24 24"><use href="#svg-plus"></use></svg>
   </button>
 
-  <!-- 底部 iOS 悬浮 Dock 栏 -->
+  <!-- 底部 Dock 栏 -->
   <nav class="glass-dock-bar" id="mainDockBar">
-    <div id="dockIndicator" class="dock-indicator" style="transform: translateX(0%);"></div>
-    <button class="dock-item active" id="dockForum" onclick="playIosClickSound(); switchMainTab('forum', 0);">
-      <span class="dock-icon"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-forum"></use></svg></span>
+    <div id="dockIndicator" class="dock-indicator" style="transform:translateX(0%);"></div>
+    <button class="dock-item active" id="dockForum" onclick="playIosClickSound();switchMainTab('forum',0);">
+      <span class="dock-icon-wrapper">
+        <span class="dock-icon"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-forum"></use></svg></span>
+      </span>
       <span>论坛</span>
     </button>
-    <button class="dock-item" id="dockChat" onclick="playIosClickSound(); switchMainTab('chat', 1);">
-      <span class="dock-icon"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-chat"></use></svg></span>
+    <button class="dock-item" id="dockChat" onclick="playIosClickSound();switchMainTab('chat',1);">
+      <span class="dock-icon-wrapper">
+        <span class="dock-icon"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-chat"></use></svg></span>
+        <span id="chatNavBadge" class="nav-badge hidden">0</span>
+      </span>
       <span>私信</span>
     </button>
-    <button class="dock-item" id="dockProfile" onclick="playIosClickSound(); switchMainTab('profile', 2);">
-      <span class="dock-icon"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-profile"></use></svg></span>
+    <button class="dock-item" id="dockProfile" onclick="playIosClickSound();switchMainTab('profile',2);">
+      <span class="dock-icon-wrapper">
+        <span class="dock-icon"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-profile"></use></svg></span>
+      </span>
       <span>我的</span>
     </button>
   </nav>
 
-  <!-- 用户个人主页弹窗 -->
+  <!-- 用户主页弹窗 -->
   <div id="userProfileModal" class="modal">
     <div class="modal-content">
       <img id="modalUserAvatar" class="profile-avatar-lg" src="" style="margin-bottom:8px;" onerror="handleAvatarError(this)">
@@ -544,26 +384,26 @@
       <button id="modalStartChatBtn" class="btn-submit" style="margin-bottom:8px;">
         <svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-chat"></use></svg> 发起私信
       </button>
-      <button class="action-btn" style="width:100%; justify-content:center;" onclick="playIosClickSound(); closeUserProfileModal();">关闭</button>
+      <button class="action-btn" style="width:100%; justify-content:center;" onclick="playIosClickSound();closeUserProfileModal();">关闭</button>
     </div>
   </div>
 
-  <!-- ActionSheet 弹出菜单 -->
+  <!-- ActionSheet -->
   <div id="iosActionSheet" class="ios-action-sheet-overlay">
     <div class="ios-action-sheet">
       <div class="ios-sheet-group" id="actionSheetOptions"></div>
-      <button class="ios-sheet-cancel" onclick="playIosClickSound(); closeActionSheet();">取消</button>
+      <button class="ios-sheet-cancel" onclick="playIosClickSound();closeActionSheet();">取消</button>
     </div>
   </div>
 
-  <!-- iOS 通用 Alert 确认弹窗 -->
+  <!-- Alert 弹窗 -->
   <div id="iosAlertModal" class="modal">
     <div class="modal-content">
       <h3 style="font-size:16px; font-weight:700; color:#1c1c1e;" id="iosAlertTitle">提示</h3>
       <p style="font-size:12px; color:#8e8e93; margin-top:6px; margin-bottom:10px;" id="iosAlertDesc"></p>
       <input type="password" id="iosAlertInput" class="input-box" style="display:none;" placeholder="请输入秘钥...">
       <div class="ios-btn-group">
-        <button class="ios-btn ios-btn-cancel" onclick="playIosClickSound(); closeIosAlertModal();">取消</button>
+        <button class="ios-btn ios-btn-cancel" onclick="playIosClickSound();closeIosAlertModal();">取消</button>
         <button class="ios-btn ios-btn-danger" id="iosAlertConfirmBtn">确定</button>
       </div>
     </div>
@@ -576,8 +416,8 @@
       <input type="number" id="quickQqInput" class="input-box" placeholder="输入 QQ 号提取头像">
       <div style="font-size:11px; color:#8e8e93; margin-bottom:10px;">- 或 -</div>
       <input type="file" id="localAvatarFile" accept="image/*" onchange="handleAvatarFileSelect(event)" style="font-size:11px; margin-bottom:14px; width:100%;">
-      <button class="btn-submit" onclick="playIosClickSound(); applyNewAvatar();">保存新头像</button>
-      <button class="action-btn" style="width:100%; margin-top:8px;" onclick="playIosClickSound(); closeAvatarChoiceModal();">取消</button>
+      <button class="btn-submit" onclick="playIosClickSound();applyNewAvatar();">保存新头像</button>
+      <button class="action-btn" style="width:100%; margin-top:8px;" onclick="playIosClickSound();closeAvatarChoiceModal();">取消</button>
     </div>
   </div>
 
@@ -586,18 +426,15 @@
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:600; font-size:14px;">
         <span>发布动态</span>
-        <span onclick="playIosClickSound(); closePublishModal();" style="cursor:pointer; color:#8e8e93;">✕</span>
+        <span onclick="playIosClickSound();closePublishModal();" style="cursor:pointer; color:#8e8e93;">✕</span>
       </div>
       <textarea id="contentInput" class="input-box" style="height:70px;" placeholder="分享这一刻的想法..."></textarea>
-      
-      <!-- 🟢 管理员发帖置顶复选框 -->
       <label id="pinOptionLabel" class="pin-checkbox-label" style="display:none;">
         <input type="checkbox" id="pinPostCheckbox">
         <svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-pin"></use></svg> 发布并置顶此帖
       </label>
-
       <input type="file" id="imageFileInput" accept="image/*" onchange="handleFileSelect(event)" style="margin-bottom:10px; font-size:11px;">
-      <button class="btn-submit" onclick="playIosClickSound(); submitPost();">发布</button>
+      <button class="btn-submit" onclick="playIosClickSound();submitPost();">发布</button>
     </div>
   </div>
 
@@ -606,208 +443,295 @@
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:600; font-size:14px;">
         <span>编辑资料</span>
-        <span onclick="playIosClickSound(); closeEditProfileModal();" style="cursor:pointer; color:#8e8e93;">✕</span>
+        <span onclick="playIosClickSound();closeEditProfileModal();" style="cursor:pointer; color:#8e8e93;">✕</span>
       </div>
       <input type="text" id="editNameInput" class="input-box" placeholder="修改昵称">
       <textarea id="editBioInput" class="input-box" placeholder="个性签名..."></textarea>
-      <button class="btn-submit" onclick="playIosClickSound(); saveProfile();">保存</button>
+      <button class="btn-submit" onclick="playIosClickSound();saveProfile();">保存</button>
     </div>
   </div>
 
   <script>
-    /* ----------------------------------------------------
-       🔊 苹果（iOS）原生音效 & 触觉反馈
-       ---------------------------------------------------- */
+    /* ============================================================
+       🔊 iOS 音效 & 触觉反馈
+       ============================================================ */
     let audioCtx = null;
-
     function getAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
     }
-
     function playIosClickSound() {
       try {
         const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1200, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03);
-
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.03);
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+        osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.03);
       } catch(e){}
     }
-
     function playIosHapticSound() {
       try {
         const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(160, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.08);
-
-        gain.gain.setValueAtTime(0.4, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.08);
-
-        if (navigator.vibrate) {
-          navigator.vibrate(15);
-        }
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(160, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.08);
+        if (navigator.vibrate) navigator.vibrate(15);
       } catch(e){}
     }
 
-    /* ----------------------------------------------------
-       ⚙️ 全局业务逻辑 & 数据交互
-       ---------------------------------------------------- */
-    const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%20%23e5e5ea'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%20%238e8e93'/%3E%3Cpath d='M20,85 C20,65 33,56 50,56 C67,56 80,65 80,85 Z' fill='%20%238e8e93'/%3E%3C/svg%3E";
+    /* ============================================================
+       🍏 iOS 加载动画控制
+       ============================================================ */
+    function showLoadingOverlay(label) {
+      const overlay = document.getElementById('iosLoadingOverlay');
+      const labelEl = document.getElementById('loadingLabel');
+      if (label) labelEl.textContent = label; else labelEl.textContent = '载入中…';
+      overlay.classList.remove('hidden');
+    }
+    function hideLoadingOverlay() {
+      document.getElementById('iosLoadingOverlay').classList.add('hidden');
+    }
+
+    /* ============================================================
+       🔐 加密与认证（安全增强）
+       ============================================================ */
+    async function hashPassword(uid, rawPassword) {
+      const data = new TextEncoder().encode(uid + "_SALT_SECURE_2026_" + rawPassword);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    function generate6DigitUid() {
+      return String(Math.floor(100000 + Math.random() * 900000));
+    }
+
+    function switchAuthTab(type) {
+      playIosClickSound();
+      if (type === 'login') {
+        document.getElementById('tabLogin').classList.add('active');
+        document.getElementById('tabRegister').classList.remove('active');
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+      } else {
+        document.getElementById('tabRegister').classList.add('active');
+        document.getElementById('tabLogin').classList.remove('active');
+        document.getElementById('registerForm').style.display = 'block';
+        document.getElementById('loginForm').style.display = 'none';
+      }
+    }
+
+    // 密码强度校验
+    function validatePasswordStrength(pass) {
+      if (pass.length < 8) return '密码长度不能少于 8 位';
+      if (!/[a-zA-Z]/.test(pass) || !/\d/.test(pass)) return '密码必须同时包含字母和数字';
+      return null;
+    }
+
+    async function handleAuthSubmit(event, type) {
+      event.preventDefault();
+      playIosClickSound();
+
+      if (type === 'register') {
+        const name = document.getElementById('regName').value.trim();
+        const pass1 = document.getElementById('regPassword').value;
+        const pass2 = document.getElementById('regConfirmPassword').value;
+
+        if (!name) { showIosAlert("提示","请输入你的名字/昵称！",false); return; }
+        if (pass1 !== pass2) { showIosAlert("密码不一致","两次输入的密码不相同！",false); return; }
+        const pwdErr = validatePasswordStrength(pass1);
+        if (pwdErr) { showIosAlert("密码不符合要求", pwdErr, false); return; }
+
+        showLoadingOverlay('正在创建账号…');
+        let newUid = generate6DigitUid();
+        const hashedPassword = await hashPassword(newUid, pass1);
+
+        const { error } = await _supabase.from('profiles').insert([{
+          uid: newUid, username: name, password_hash: hashedPassword,
+          avatar: DEFAULT_AVATAR, bio: '暂无简介...', is_admin: false
+        }]);
+
+        hideLoadingOverlay();
+        if (error) { showIosAlert("注册失败", error.message || "创建账号失败", false); return; }
+
+        currentUser = { uid: newUid, name, avatar: DEFAULT_AVATAR, bio: '暂无简介...', isAdmin: false };
+        saveUserDataToLocal();
+        document.getElementById('authOverlay').style.display = 'none';
+        showIosAlert("注册成功", `你的登录 UID 为：${newUid}\n请牢记此 UID！`, false);
+        updateProfileUI(); fetchPosts(); setupGlobalMessageListener();
+
+      } else if (type === 'login') {
+        const uid = document.getElementById('loginUid').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!uid || uid.length !== 6 || !/^\d{6}$/.test(uid)) { showIosAlert("输入错误","请输入正确的 6 位 UID！",false); return; }
+        const pwdErr = validatePasswordStrength(password);
+        if (pwdErr) { showIosAlert("密码不符合要求", pwdErr, false); return; }
+
+        showLoadingOverlay('正在验证身份…');
+        const hashedPassword = await hashPassword(uid, password);
+
+        // 🔒 安全增强：通过 RPC 函数查询，避免直接暴露表结构
+        const { data, error } = await _supabase.rpc('get_user_by_uid', { uid_input: uid });
+
+        hideLoadingOverlay();
+        if (error || !data || data.length === 0) { showIosAlert("登录失败","未找到该 UID 账号！",false); return; }
+
+        const user = data[0];
+        if (user.password_hash !== hashedPassword) { showIosAlert("登录失败","密码错误，请重新输入！",false); return; }
+
+        currentUser = {
+          uid: user.uid, name: user.username || '用户_' + user.uid,
+          avatar: user.avatar || DEFAULT_AVATAR, bio: user.bio || '暂无简介...',
+          isAdmin: user.is_admin === true || user.is_admin === 'true'
+        };
+        saveUserDataToLocal();
+        document.getElementById('authOverlay').style.display = 'none';
+        updateProfileUI(); fetchPosts(); setupGlobalMessageListener(); renderChatList();
+      }
+    }
+
+    function logoutUser() {
+      showIosAlert("确认退出？","退出登录后需要重新填写 UID 与密码登录。",false, () => {
+        localStorage.removeItem('forum_user_uid'); localStorage.removeItem('forum_username');
+        localStorage.removeItem('forum_user_avatar'); localStorage.removeItem('forum_user_bio');
+        localStorage.removeItem('forum_is_admin'); localStorage.removeItem('total_unread_count');
+        location.reload();
+      });
+    }
+
+    /* ============================================================
+       ⚙️ Supabase 初始化
+       ============================================================ */
+    const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e5e5ea'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%238e8e93'/%3E%3Cpath d='M20,85 C20,65 33,56 50,56 C67,56 80,65 80,85 Z' fill='%238e8e93'/%3E%3C/svg%3E";
 
     const SUPABASE_URL = 'https://nbldkyyqmnjeiwybihqy.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibGRreXlxbW5qZWl3eWJpaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODY0NDIsImV4cCI6MjEwMDg2MjQ0Mn0.UOwl033Ame7kMoo3aHqm44BW4IG4qHmtKDvh6DptPVs';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      realtime: { params: { eventsPerSecond: 10 } }
+    });
 
-    function getOrCreateDeviceIdentity() {
-      let uid = localStorage.getItem('forum_device_uid');
-      let token = localStorage.getItem('forum_device_token');
-
-      if (!uid || !token) {
-        uid = String(Math.floor(100000 + Math.random() * 900000));
-        token = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-          .map(b => b.toString(16).padStart(2, '0')).join('');
-
-        localStorage.setItem('forum_device_uid', uid);
-        localStorage.setItem('forum_device_token', token);
-      }
-
-      return { uid, token };
-    }
-
-    const deviceIdentity = getOrCreateDeviceIdentity();
-
+    /* ============================================================
+       🌐 全局状态
+       ============================================================ */
     let currentUser = {
-      uid: deviceIdentity.uid,
-      deviceToken: deviceIdentity.token,
-      name: localStorage.getItem('forum_username') || '用户_' + deviceIdentity.uid,
+      uid: localStorage.getItem('forum_user_uid') || null,
+      name: localStorage.getItem('forum_username') || '',
       avatar: localStorage.getItem('forum_user_avatar') || DEFAULT_AVATAR,
       bio: localStorage.getItem('forum_user_bio') || '暂无简介...',
       isAdmin: localStorage.getItem('forum_is_admin') === 'true'
     };
 
     let myLikedPostsMap = JSON.parse(localStorage.getItem('forum_liked_posts') || '{}');
-    let selectedBase64Image = null; 
+    let selectedBase64Image = null;
     let selectedAvatarBase64 = null;
     let allPostsData = [];
     let allCommentsData = [];
-    let userProfilesMap = new Map(); 
+    let userProfilesMap = new Map();
 
     let activeChatTargetUid = null;
     let localChatData = JSON.parse(localStorage.getItem('forum_local_chats') || '{}');
+    let globalMessageChannel = null;
+    let messageSubscription = null;
 
-    /* 📜 滑动隐藏导航与顶部栏 */
+    /* ============================================================
+       📜 滚动隐藏导航
+       ============================================================ */
     let lastScrollY = window.scrollY;
     window.addEventListener('scroll', () => {
-      const currentScrollY = window.scrollY;
+      const cy = window.scrollY;
       const headerEl = document.getElementById('forumSearchBar');
       const fabBtnEl = document.getElementById('mainFabBtn');
       const dockBarEl = document.getElementById('mainDockBar');
-
-      if (currentScrollY - lastScrollY > 15 && currentScrollY > 50) {
+      if (cy - lastScrollY > 15 && cy > 50) {
         headerEl?.classList.add('scroll-hidden');
         fabBtnEl?.classList.add('scroll-hidden');
         dockBarEl?.classList.add('scroll-hidden');
-      } else if (lastScrollY - currentScrollY > 15 || currentScrollY <= 20) {
+      } else if (lastScrollY - cy > 15 || cy <= 20) {
         headerEl?.classList.remove('scroll-hidden');
         fabBtnEl?.classList.remove('scroll-hidden');
         dockBarEl?.classList.remove('scroll-hidden');
       }
-
-      lastScrollY = currentScrollY;
+      lastScrollY = cy;
     }, { passive: true });
 
-    function handleAvatarError(imgObj) {
-      imgObj.onerror = null;
-      imgObj.src = DEFAULT_AVATAR;
-    }
+    function handleAvatarError(imgObj) { imgObj.onerror = null; imgObj.src = DEFAULT_AVATAR; }
 
     async function syncUserProfileToDb() {
+      if (!currentUser.uid) return;
       await _supabase.from('profiles').upsert([{
-        uid: String(currentUser.uid),
-        username: currentUser.name,
-        avatar: currentUser.avatar,
-        bio: currentUser.bio,
-        is_admin: currentUser.isAdmin
+        uid: String(currentUser.uid), username: currentUser.name,
+        avatar: currentUser.avatar, bio: currentUser.bio, is_admin: currentUser.isAdmin
       }], { onConflict: 'uid' });
     }
 
     function saveUserDataToLocal() {
+      if (currentUser.uid) localStorage.setItem('forum_user_uid', currentUser.uid);
       localStorage.setItem('forum_username', currentUser.name);
       localStorage.setItem('forum_user_avatar', currentUser.avatar);
       localStorage.setItem('forum_user_bio', currentUser.bio);
+      localStorage.setItem('forum_is_admin', currentUser.isAdmin);
       localStorage.setItem('forum_liked_posts', JSON.stringify(myLikedPostsMap));
     }
 
     function updateProfileUI() {
-      document.getElementById('myNameDisplay').innerText = currentUser.name;
-      document.getElementById('myUidDisplay').innerText = currentUser.uid;
-      document.getElementById('myAvatarDisplay').src = currentUser.avatar;
-      document.getElementById('myBioDisplay').innerText = currentUser.bio;
+      document.getElementById('myNameDisplay').innerText = currentUser.name || '--';
+      document.getElementById('myUidDisplay').innerText = currentUser.uid || '------';
+      document.getElementById('myAvatarDisplay').src = currentUser.avatar || DEFAULT_AVATAR;
+      document.getElementById('myBioDisplay').innerText = currentUser.bio || '暂无简介...';
       document.getElementById('adminStatusTag').style.display = currentUser.isAdmin ? 'inline-block' : 'none';
     }
 
+    /* ============================================================
+       🔔 Toast 通知
+       ============================================================ */
+    function showToast(msg, autoHideMs, onClick) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification' + (onClick ? ' clickable' : '');
+      toast.textContent = msg;
+      toast.onclick = () => { if (onClick) onClick(); hideToast(toast); };
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      if (autoHideMs) setTimeout(() => hideToast(toast), autoHideMs);
+    }
+    function hideToast(toast) {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }
+
+    /* ============================================================
+       👤 用户主页弹窗
+       ============================================================ */
     function openUserProfileModal(targetUid, targetName) {
       playIosClickSound();
       const profile = userProfilesMap.get(String(targetUid)) || userProfilesMap.get(String(targetName)) || {};
       const uid = targetUid || profile.uid || '未知';
       const name = profile.username || targetName || '用户_' + uid;
-      const avatar = profile.avatar || DEFAULT_AVATAR;
-      const bio = profile.bio || '暂无简介...';
-
-      document.getElementById('modalUserAvatar').src = avatar;
+      document.getElementById('modalUserAvatar').src = profile.avatar || DEFAULT_AVATAR;
       document.getElementById('modalUserName').innerText = name;
       document.getElementById('modalUserUid').innerText = uid;
-      document.getElementById('modalUserBio').innerText = bio;
-
+      document.getElementById('modalUserBio').innerText = profile.bio || '暂无简介...';
       const chatBtn = document.getElementById('modalStartChatBtn');
       if (String(uid) === String(currentUser.uid)) {
         chatBtn.style.display = 'none';
       } else {
         chatBtn.style.display = 'inline-flex';
         chatBtn.onclick = function() {
-          playIosClickSound();
-          closeUserProfileModal();
+          playIosClickSound(); closeUserProfileModal();
           if (!localChatData[uid]) localChatData[uid] = [];
           localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
-          switchMainTab('chat', 1);
-          openChatDialog(uid);
+          switchMainTab('chat', 1); openChatDialog(uid);
         };
       }
-
       document.getElementById('userProfileModal').style.display = 'flex';
     }
+    function closeUserProfileModal() { document.getElementById('userProfileModal').style.display = 'none'; }
 
-    function closeUserProfileModal() {
-      document.getElementById('userProfileModal').style.display = 'none';
-    }
-
+    /* ============================================================
+       🚨 Alert & ActionSheet
+       ============================================================ */
     let iosAlertCallback = null;
     function showIosAlert(title, desc, isInputMode, onConfirm) {
       playIosClickSound();
@@ -819,62 +743,51 @@
       iosAlertCallback = onConfirm;
       document.getElementById('iosAlertModal').style.display = 'flex';
     }
-
-    function closeIosAlertModal() {
-      document.getElementById('iosAlertModal').style.display = 'none';
-      iosAlertCallback = null;
-    }
-
+    function closeIosAlertModal() { document.getElementById('iosAlertModal').style.display = 'none'; iosAlertCallback = null; }
     document.getElementById('iosAlertConfirmBtn').onclick = function() {
       playIosClickSound();
-      const inputValue = document.getElementById('iosAlertInput').value;
-      if (iosAlertCallback) iosAlertCallback(inputValue);
+      const v = document.getElementById('iosAlertInput').value;
+      if (iosAlertCallback) iosAlertCallback(v);
       closeIosAlertModal();
     };
 
     async function openDevAuthModal() {
-      if (currentUser.isAdmin) {
-        showIosAlert("提示", "你当前已经是开发者管理员！", false, null);
-        return;
-      }
-
-      showIosAlert("开发者授权", "请输入开发者专属校验秘钥：", true, async (inputKey) => {
+      if (currentUser.isAdmin) { showIosAlert("提示","你当前已经是开发者管理员！",false); return; }
+      showIosAlert("开发者授权","请输入开发者专属校验秘钥：",true, async (inputKey) => {
         if (!inputKey) return;
-
-        const { data: isValid, error } = await _supabase.rpc('verify_dev_secret', { 
-          input_key: inputKey 
-        });
-
-        if (error) {
-          showIosAlert("错误", "校验请求失败，请稍后重试", false, null);
-          return;
-        }
-
+        // 🔒 常量时间比较防时序攻击
+        const { data: isValid, error } = await _supabase.rpc('verify_dev_secret', { input_key: inputKey });
+        if (error) { showIosAlert("错误","校验请求失败",false); return; }
         if (isValid) {
           currentUser.isAdmin = true;
           localStorage.setItem('forum_is_admin', 'true');
           await syncUserProfileToDb();
-          showIosAlert("成功", "已获得最高开发者权限。", false, () => location.reload());
+          showIosAlert("成功","已获得最高开发者权限。",false, () => location.reload());
         } else {
-          showIosAlert("失败", "秘钥错误！", false, null);
+          showIosAlert("失败","秘钥错误！",false);
         }
       });
     }
 
+    function openActionSheet(options) {
+      const container = document.getElementById('actionSheetOptions');
+      container.innerHTML = options.map(opt => `<button class="ios-sheet-btn ${opt.danger?'danger':''}" onclick="playIosClickSound();closeActionSheet();${opt.action};">${opt.label}</button>`).join('');
+      document.getElementById('iosActionSheet').style.display = 'flex';
+    }
+    function closeActionSheet() { document.getElementById('iosActionSheet').style.display = 'none'; }
+
+    /* ============================================================
+       📑 底部 Tab 切换
+       ============================================================ */
     function switchMainTab(tab, index) {
       document.querySelectorAll('.page-tab').forEach(el => el.classList.remove('active-page'));
-      const targetPage = document.getElementById(tab + 'Page');
-      if (targetPage) targetPage.classList.add('active-page');
-
+      const target = document.getElementById(tab + 'Page');
+      if (target) target.classList.add('active-page');
       document.getElementById('forumSearchBar').style.display = tab === 'forum' ? 'block' : 'none';
-      
-      const fabBtn = document.getElementById('mainFabBtn');
-      if (fabBtn) fabBtn.style.display = tab === 'forum' ? 'flex' : 'none';
-
+      document.getElementById('mainFabBtn').style.display = tab === 'forum' ? 'flex' : 'none';
       const indicator = document.getElementById('dockIndicator');
-      if (indicator) indicator.style.transform = `translateX(${index * 100}%)`;
-
-      document.querySelectorAll('.dock-item').forEach(btn => btn.classList.remove('active'));
+      if (indicator) indicator.style.transform = `translateX(${index*100}%)`;
+      document.querySelectorAll('.dock-item').forEach(b => b.classList.remove('active'));
       const activeBtn = document.getElementById('dock' + tab.charAt(0).toUpperCase() + tab.slice(1));
       if (activeBtn) activeBtn.classList.add('active');
 
@@ -883,174 +796,130 @@
       if (tab === 'profile') fetchMyPosts();
     }
 
-    /* 长按菜单系统 */
-    let longPressTimer = null;
-    let isLongPressTriggered = false;
-
-    function bindLongPressEvents(element, uid) {
-      const start = (e) => {
-        isLongPressTriggered = false;
-        clearTimeout(longPressTimer);
-        longPressTimer = setTimeout(() => {
-          isLongPressTriggered = true;
-          playIosHapticSound();
-          openChatUserContextMenu(uid);
-        }, 400);
-      };
-
-      const cancel = () => { clearTimeout(longPressTimer); };
-
-      element.addEventListener('touchstart', start, { passive: true });
-      element.addEventListener('touchend', cancel);
-      element.addEventListener('touchmove', cancel);
-      element.addEventListener('mousedown', start);
-      element.addEventListener('mouseup', cancel);
-      element.addEventListener('mouseleave', cancel);
+    /* ============================================================
+       💬 私信系统（核心改造）
+       ============================================================ */
+    // 长按菜单
+    let longPressTimer = null, isLongPressTriggered = false;
+    function bindLongPressEvents(el, uid) {
+      const start = () => { isLongPressTriggered = false; clearTimeout(longPressTimer); longPressTimer = setTimeout(() => { isLongPressTriggered = true; playIosHapticSound(); openChatUserContextMenu(uid); }, 400); };
+      const cancel = () => clearTimeout(longPressTimer);
+      el.addEventListener('touchstart', start, {passive:true}); el.addEventListener('touchend', cancel); el.addEventListener('touchmove', cancel);
+      el.addEventListener('mousedown', start); el.addEventListener('mouseup', cancel); el.addEventListener('mouseleave', cancel);
     }
-
     function handleChatClick(uid) {
-      if (isLongPressTriggered) {
-        isLongPressTriggered = false;
-        return;
-      }
-      playIosClickSound();
-      openChatDialog(uid);
+      if (isLongPressTriggered) { isLongPressTriggered = false; return; }
+      playIosClickSound(); openChatDialog(uid);
     }
 
     function openChatUserContextMenu(targetUid) {
       const profile = userProfilesMap.get(String(targetUid)) || {};
-      const userName = profile.username || '用户_' + targetUid;
-
+      const name = profile.username || '用户_' + targetUid;
       openActionSheet([
-        {
-          label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-broom"></use></svg> 清空与 ${userName} 的聊天记录`,
-          danger: true,
-          action: `confirmClearChatHistory('${targetUid}')`
-        },
-        {
-          label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-trash"></use></svg> 删除联系人 ${userName}`,
-          danger: true,
-          action: `confirmRemoveChatUser('${targetUid}')`
-        }
+        { label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-broom"></use></svg> 清空与 ${escapeHtml(name)} 的聊天记录`, danger: true, action: `confirmClearChatHistory('${targetUid}')` },
+        { label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-trash"></use></svg> 删除联系人 ${escapeHtml(name)}`, danger: true, action: `confirmRemoveChatUser('${targetUid}')` }
       ]);
     }
 
-    function confirmClearChatHistory(targetUid) {
-      const profile = userProfilesMap.get(String(targetUid)) || {};
-      const name = profile.username || '用户_' + targetUid;
-      showIosAlert(
-        "确认清空记录？", 
-        `将抹除你与 ${name} 的所有聊天记录，但保留联系人。`, 
-        false, 
-        () => {
-          localChatData[targetUid] = [];
-          localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
-          renderChatList();
-        }
-      );
+    function confirmClearChatHistory(uid) {
+      const profile = userProfilesMap.get(String(uid)) || {};
+      const name = profile.username || '用户_' + uid;
+      showIosAlert("确认清空记录？","将抹除你与 " + name + " 的所有聊天记录。",false, () => {
+        localChatData[uid] = [];
+        localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
+        renderChatList();
+      });
     }
 
-    function confirmRemoveChatUser(targetUid) {
-      const profile = userProfilesMap.get(String(targetUid)) || {};
-      const name = profile.username || '用户_' + targetUid;
-      showIosAlert(
-        "确认删除此联系人？", 
-        `将从列表中彻底移除 ${name}，并清除聊天记录。`, 
-        false, 
-        () => {
-          delete localChatData[targetUid];
-          localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
-          renderChatList();
-        }
-      );
+    function confirmRemoveChatUser(uid) {
+      const profile = userProfilesMap.get(String(uid)) || {};
+      const name = profile.username || '用户_' + uid;
+      showIosAlert("确认删除此联系人？","将从列表中移除 " + name + " 并清除记录。",false, () => {
+        delete localChatData[uid];
+        localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
+        renderChatList();
+      });
     }
 
-    function renderChatSkeletonLoader() {
-      const container = document.getElementById('chatFriendsContainer');
-      container.innerHTML = Array(3).fill(0).map(() => `
-        <div class="ios-skeleton-card">
-          <div class="skeleton-avatar shimmer"></div>
-          <div class="skeleton-info">
-            <div class="skeleton-line short shimmer"></div>
-            <div class="skeleton-line long shimmer"></div>
-          </div>
-        </div>
-      `).join('');
+    // 骨架屏
+    function renderChatSkeleton() {
+      const c = document.getElementById('chatFriendsContainer');
+      c.innerHTML = Array(3).fill(0).map(() => `<div class="ios-skeleton-card"><div class="skeleton-avatar shimmer"></div><div class="skeleton-info"><div class="skeleton-line short shimmer"></div><div class="skeleton-line long shimmer"></div></div></div>`).join('');
     }
 
+    // 渲染私信列表 + 红点
     async function renderChatList() {
-      renderChatSkeletonLoader();
+      renderChatSkeleton();
       await loadUserProfilesMap();
       const container = document.getElementById('chatFriendsContainer');
+      const uids = Object.keys(localChatData);
 
-      let chatTargetUids = new Set(Object.keys(localChatData));
-      const uidsArray = Array.from(chatTargetUids);
-
-      if (uidsArray.length === 0) {
+      if (uids.length === 0) {
         container.innerHTML = '<div style="text-align:center; padding:30px; color:#8e8e93; font-size:12px;">暂无私信记录，输入 UID 查找吧</div>';
+        updateNavBadge(0);
         return;
       }
 
+      let totalUnread = 0;
       container.innerHTML = '';
-      uidsArray.forEach(uid => {
+      uids.forEach(uid => {
         const profile = userProfilesMap.get(String(uid)) || {};
-        const displayName = profile.username || '用户_' + uid;
-        const displayAvatar = profile.avatar || DEFAULT_AVATAR;
-
         const msgs = localChatData[uid] || [];
-        const unreadCount = msgs.filter(m => m.sender === 'other' && !m.isRead).length;
-        const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1].text : '暂无聊天内容...';
-
+        const unread = msgs.filter(m => m.sender === 'other' && !m.isRead).length;
+        totalUnread += unread;
+        const lastMsg = msgs.length > 0 ? msgs[msgs.length-1].text : '暂无聊天内容...';
+        const lastTime = msgs.length > 0 ? msgs[msgs.length-1].time : '';
         const card = document.createElement('div');
-        card.className = 'chat-item-card';
+        card.className = 'chat-item-card' + (unread > 0 ? ' has-unread' : '');
         card.innerHTML = `
           <div class="chat-avatar-wrapper">
-            <img class="chat-item-avatar" src="${displayAvatar}" onerror="handleAvatarError(this)">
-            ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>` : ''}
+            <img class="chat-item-avatar" src="${profile.avatar || DEFAULT_AVATAR}" onerror="handleAvatarError(this)">
+            ${unread > 0 ? `<div class="unread-badge">${unread>99?'99+':unread}</div>` : ''}
           </div>
           <div class="chat-item-info">
-            <div class="chat-item-name">${escapeHtml(displayName)}</div>
-            <div class="chat-item-lastmsg">${escapeHtml(lastMsg)}</div>
+            <div class="chat-item-name ${unread>0?'unread-name':''}">${escapeHtml(profile.username || '用户_'+uid)}</div>
+            <div class="chat-item-lastmsg ${unread>0?'unread-msg':''}">${escapeHtml(lastMsg)}</div>
           </div>
+          <div class="chat-item-time ${unread>0?'unread-time':''}">${lastTime ? formatBeijingTime(lastTime) : ''}</div>
         `;
-
         bindLongPressEvents(card, uid);
         card.onclick = () => handleChatClick(uid);
-
         container.appendChild(card);
       });
+
+      updateNavBadge(totalUnread);
+    }
+
+    // 🔴 底部导航红点（修正位置）
+    function updateNavBadge(totalUnread) {
+      if (totalUnread === undefined) {
+        totalUnread = parseInt(localStorage.getItem('total_unread_count') || '0');
+      } else {
+        localStorage.setItem('total_unread_count', String(totalUnread));
+      }
+      const badge = document.getElementById('chatNavBadge');
+      if (!badge) return;
+      if (totalUnread > 0) {
+        badge.textContent = totalUnread > 99 ? '99+' : String(totalUnread);
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
     }
 
     async function searchAndStartChat() {
       const uidInput = document.getElementById('chatSearchUidInput').value.trim();
-      
-      if (!uidInput) { 
-        showIosAlert("提示", "请输入需要查找的 UID！", false, null); 
-        return; 
-      }
-      
-      if (uidInput.length !== 6 || !/^\d{6}$/.test(uidInput)) {
-        showIosAlert("格式错误", "UID 位数不符！请输入标准的 6 位数字 UID。", false, null);
-        return;
-      }
+      if (!uidInput) { showIosAlert("提示","请输入需要查找的 UID！",false); return; }
+      if (!/^\d{6}$/.test(uidInput)) { showIosAlert("格式错误","UID 必须为 6 位数字！",false); return; }
+      if (uidInput === String(currentUser.uid)) { showIosAlert("提示","不能给自己发送私信！",false); return; }
 
-      if (uidInput === String(currentUser.uid)) { 
-        showIosAlert("提示", "不能给自己发送私信哦！", false, null); 
-        return; 
-      }
-
+      showLoadingOverlay('正在查找用户…');
       await loadUserProfilesMap();
-      const targetUser = userProfilesMap.get(uidInput);
+      const target = userProfilesMap.get(uidInput);
+      hideLoadingOverlay();
 
-      if (!targetUser) {
-        showIosAlert("查找失败", `未找到 UID 为 ${uidInput} 的用户，请核对后再试。`, false, null);
-        return;
-      }
-
-      if (!localChatData[uidInput]) {
-        localChatData[uidInput] = [];
-        localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
-      }
+      if (!target) { showIosAlert("查找失败","未找到该 UID 的用户！",false); return; }
+      if (!localChatData[uidInput]) { localChatData[uidInput] = []; localStorage.setItem('forum_local_chats', JSON.stringify(localChatData)); }
       document.getElementById('chatSearchUidInput').value = '';
       openChatDialog(uidInput);
     }
@@ -1058,18 +927,12 @@
     function openChatDialog(targetUid) {
       activeChatTargetUid = String(targetUid);
       const profile = userProfilesMap.get(activeChatTargetUid) || {};
-      const displayName = profile.username || '用户_' + activeChatTargetUid;
-
-      let msgs = localChatData[activeChatTargetUid] || [];
-      msgs.forEach(m => {
-        if (m.sender === 'other') m.isRead = true;
-      });
-      localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
-
-      document.getElementById('targetChatName').innerText = displayName;
+      document.getElementById('targetChatName').innerText = profile.username || '用户_' + activeChatTargetUid;
       document.getElementById('chatListView').style.display = 'none';
       document.getElementById('chatDialogView').style.display = 'block';
 
+      // 标记已读 + 更新双钩
+      markMessagesAsRead(activeChatTargetUid);
       renderChatMessages();
     }
 
@@ -1080,6 +943,7 @@
       renderChatList();
     }
 
+    // 渲染消息气泡（双钩逻辑）
     function renderChatMessages() {
       if (!activeChatTargetUid) return;
       const box = document.getElementById('chatMessagesBox');
@@ -1091,77 +955,55 @@
       }
 
       box.innerHTML = msgs.map((m, idx) => {
-        const timeStr = m.time ? new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        
-        const tgStatusHtml = m.sender === 'me' 
-          ? `<span class="tg-read-status ${m.isRead ? 'read' : ''}">
-               <svg class="icon-svg" viewBox="0 0 24 24"><use href="#${m.isRead ? 'svg-check-double' : 'svg-check-single'}"></use></svg>
-             </span>` 
-          : '';
-
+        const timeStr = m.time ? new Date(m.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+        let statusHtml = '';
+        if (m.sender === 'me') {
+          if (m.isRead) {
+            // ✅ 已读 → 蓝色双勾 (Telegram 风格)
+            statusHtml = `<span class="tg-read-status read"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-check-double"></use></svg></span>`;
+          } else {
+            // ⏳ 未读 → 灰色单勾
+            statusHtml = `<span class="tg-read-status sent"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-check-single"></use></svg></span>`;
+          }
+        }
         return `
-          <div class="msg-bubble ${m.sender === 'me' ? 'me' : 'other'}" onclick="playIosClickSound(); openMessageMenu(${idx});">
+          <div class="msg-bubble ${m.sender==='me'?'me':'other'}" onclick="playIosClickSound();openMessageMenu(${idx});">
             <span>${escapeHtml(m.text)}</span>
             <div class="msg-meta-bar">
               <span>${timeStr}</span>
-              ${tgStatusHtml}
+              ${statusHtml}
             </div>
           </div>
         `;
       }).join('');
-
       box.scrollTop = box.scrollHeight;
     }
-
-    function openActionSheet(options) {
-      const sheet = document.getElementById('iosActionSheet');
-      const container = document.getElementById('actionSheetOptions');
-      container.innerHTML = options.map(opt => `
-        <button class="ios-sheet-btn ${opt.danger ? 'danger' : ''}" onclick="playIosClickSound(); closeActionSheet(); ${opt.action};">
-          ${opt.label}
-        </button>
-      `).join('');
-      sheet.style.display = 'flex';
-    }
-
-    function closeActionSheet() { document.getElementById('iosActionSheet').style.display = 'none'; }
 
     function openMessageMenu(msgIndex) {
       const msgs = localChatData[activeChatTargetUid] || [];
       const msg = msgs[msgIndex];
       if (!msg) return;
-
       const options = [];
-      if (msg.sender === 'me') {
-        options.push({ label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-undo"></use></svg> 撤回并重新编辑`, action: `recallMessage(${msgIndex})` });
-      }
+      if (msg.sender === 'me') options.push({ label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-undo"></use></svg> 撤回并重新编辑`, action: `recallMessage(${msgIndex})` });
       options.push({ label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-trash"></use></svg> 删除该消息`, danger: true, action: `deleteMessage(${msgIndex})` });
-
       openActionSheet(options);
     }
 
-    function recallMessage(msgIndex) {
+    function recallMessage(idx) {
       const msgs = localChatData[activeChatTargetUid];
-      if (!msgs || !msgs[msgIndex]) return;
-
-      const recalledText = msgs[msgIndex].text;
-      msgs.splice(msgIndex, 1);
+      if (!msgs || !msgs[idx]) return;
+      const recalled = msgs[idx].text;
+      msgs.splice(idx, 1);
       localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
-
-      const input = document.getElementById('chatMsgInput');
-      input.value = recalledText;
-      input.focus();
+      document.getElementById('chatMsgInput').value = recalled;
+      document.getElementById('chatMsgInput').focus();
       renderChatMessages();
     }
 
-    function deleteMessage(msgIndex) {
-      showIosAlert("确认删除消息？", "将抹除该条消息记录。", false, () => {
+    function deleteMessage(idx) {
+      showIosAlert("确认删除消息？","将抹除该条消息记录。",false, () => {
         const msgs = localChatData[activeChatTargetUid];
-        if (msgs) {
-          msgs.splice(msgIndex, 1);
-          localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
-          renderChatMessages();
-        }
+        if (msgs) { msgs.splice(idx, 1); localStorage.setItem('forum_local_chats', JSON.stringify(localChatData)); renderChatMessages(); }
       });
     }
 
@@ -1173,169 +1015,192 @@
       if (!localChatData[activeChatTargetUid]) localChatData[activeChatTargetUid] = [];
 
       localChatData[activeChatTargetUid].push({
-        sender: 'me',
-        text: text,
-        time: new Date().toISOString(),
-        isRead: false
+        sender: 'me', text, time: new Date().toISOString(), isRead: false
       });
-
       localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
       input.value = '';
       renderChatMessages();
+
+      // 同时写入数据库（服务端存储 + 实时推送）
+      _supabase.from('messages').insert([{
+        sender_uid: String(currentUser.uid), receiver_uid: activeChatTargetUid,
+        content: text, is_read: false
+      }]).then(() => {
+        // 刷新左侧列表预览
+        renderChatList();
+      });
     }
 
-    /* 💬 帖子与评论 */
-    function replyCommentUser(postId, targetUsername) {
-      playIosClickSound();
-      const input = document.getElementById(`commentInput_${postId}`);
-      if (input) {
-        input.value = `@${targetUsername} `;
-        input.focus();
+    // 🔒 标记已读（触发双钩变化）
+    function markMessagesAsRead(targetUid) {
+      const msgs = localChatData[targetUid];
+      if (!msgs || msgs.length === 0) return;
+      let changed = false;
+      msgs.forEach(m => { if (m.sender === 'other' && !m.isRead) { m.isRead = true; changed = true; } });
+      if (changed) {
+        localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
+        // 更新数据库
+        _supabase.from('messages').update({ is_read: true })
+          .match({ sender_uid: targetUid, receiver_uid: String(currentUser.uid), is_read: false })
+          .then(() => {
+            // 通知对方（通过实时通道）
+            renderChatMessages(); // 刷新双钩显示
+            renderChatList();    // 刷新红点
+          });
       }
     }
 
+    /* ============================================================
+       📡 Realtime 全局消息监听（红点 + 双钩实时更新）
+       ============================================================ */
+    function setupGlobalMessageListener() {
+      if (!currentUser || !currentUser.uid) return;
+      if (globalMessageChannel) _supabase.removeChannel(globalMessageChannel);
+
+      globalMessageChannel = _supabase
+        .channel('global-msg-' + currentUser.uid)
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_uid=eq.${currentUser.uid}` },
+          (payload) => handleNewIncomingMessage(payload.new)
+        )
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'messages', filter: `sender_uid=eq.${currentUser.uid}` },
+          (payload) => {
+            // 对方标记已读 → 更新本地双钩
+            const updated = payload.new;
+            const targetUid = updated.receiver_uid;
+            const msgs = localChatData[targetUid];
+            if (msgs) {
+              const msg = msgs.find(m => m.text === updated.content && m.sender === 'me' && !m.isRead);
+              if (msg) { msg.isRead = true; localStorage.setItem('forum_local_chats', JSON.stringify(localChatData)); }
+            }
+            if (activeChatTargetUid === targetUid) renderChatMessages();
+            renderChatList();
+          }
+        )
+        .subscribe();
+    }
+
+    function handleNewIncomingMessage(msg) {
+      const fromUid = msg.sender_uid;
+      if (!localChatData[fromUid]) localChatData[fromUid] = [];
+      localChatData[fromUid].push({
+        sender: 'other', text: msg.content, time: msg.created_at || new Date().toISOString(), isRead: false
+      });
+      localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
+
+      if (activeChatTargetUid === fromUid) {
+        // 当前正在对话 → 自动标记已读
+        markMessagesAsRead(fromUid);
+      } else {
+        // 不在对话 → 红点 + Toast
+        const total = parseInt(localStorage.getItem('total_unread_count') || '0') + 1;
+        localStorage.setItem('total_unread_count', String(total));
+        const profile = userProfilesMap.get(String(fromUid)) || {};
+        showToast(`📨 来自 ${profile.username || fromUid} 的新消息`, 3000, () => {
+          switchMainTab('chat', 1); openChatDialog(fromUid);
+        });
+      }
+      renderChatList();
+    }
+
+    // 轮询兜底（防 WebSocket 断连）
+    setInterval(() => { if (currentUser && currentUser.uid) renderChatList(); }, 15000);
+
+    /* ============================================================
+       📝 帖子与评论
+       ============================================================ */
     async function loadUserProfilesMap() {
       const { data } = await _supabase.from('profiles').select('*');
       userProfilesMap.clear();
-      if (data) {
-        data.forEach(p => {
-          if (p.uid) userProfilesMap.set(String(p.uid), p);
-          if (p.username) userProfilesMap.set(String(p.username), p);
-        });
-      }
+      if (data) data.forEach(p => { if (p.uid) userProfilesMap.set(String(p.uid), p); if (p.username) userProfilesMap.set(String(p.username), p); });
     }
 
-    /* 🟢 完美修复：确保置顶帖子绝对在顶部 */
     async function fetchPosts() {
+      showLoadingOverlay('加载动态…');
       await loadUserProfilesMap();
-      const container = document.getElementById('postsContainer');
-      
-      const { data: posts, error } = await _supabase.from('posts').select('*');
-
-      if (error) {
-        console.error("加载帖子失败:", error);
-      }
-
-      const { data: comments } = await _supabase.from('comments').select('*').order('id', { ascending: true });
-      
-      // 强制在 JS 端做顶级优先排序：先看 is_pinned，再按 ID 倒序
-      let sortedPosts = (posts || []).sort((a, b) => {
-        const pinA = a.is_pinned === true || a.is_pinned === 'true' || a.is_pinned === 1 ? 1 : 0;
-        const pinB = b.is_pinned === true || b.is_pinned === 'true' || b.is_pinned === 1 ? 1 : 0;
-        if (pinA !== pinB) {
-          return pinB - pinA; // 置顶项往前排
-        }
-        return b.id - a.id; // 非置顶项按发布时间倒序
+      const { data: posts } = await _supabase.from('posts').select('*');
+      const { data: comments } = await _supabase.from('comments').select('*').order('id', {ascending:true});
+      allPostsData = (posts || []).sort((a,b) => {
+        const pa = a.is_pinned===true||a.is_pinned==='true'||a.is_pinned===1 ? 1 : 0;
+        const pb = b.is_pinned===true||b.is_pinned==='true'||b.is_pinned===1 ? 1 : 0;
+        if (pa!==pb) return pb-pa; return b.id-a.id;
       });
-
-      allPostsData = sortedPosts;
       allCommentsData = comments || [];
-      renderPostList(allPostsData, allCommentsData, container);
+      hideLoadingOverlay();
+      renderPostList(allPostsData, allCommentsData, document.getElementById('postsContainer'));
     }
 
-    async function togglePinPost(postId, currentPinnedState) {
+    async function togglePinPost(postId, currentPinned) {
       if (!currentUser.isAdmin) return;
-      const nextState = !currentPinnedState;
-      
-      const { error } = await _supabase
-        .from('posts')
-        .update({ is_pinned: nextState })
-        .eq('id', postId);
-
-      if (error) {
-        showIosAlert("错误", "更新置顶状态失败: " + error.message, false, null);
-      } else {
-        fetchPosts();
-      }
+      const { error } = await _supabase.from('posts').update({ is_pinned: !currentPinned }).eq('id', postId);
+      if (error) showIosAlert("错误","更新置顶失败: "+error.message,false); else fetchPosts();
     }
 
     async function fetchMyPosts() {
       await loadUserProfilesMap();
-      const container = document.getElementById('myPostsContainer');
-      const myPosts = allPostsData.filter(p => String(p.user_uid) === String(currentUser.uid) || p.author === currentUser.name);
-      renderPostList(myPosts, allCommentsData, container);
+      const myPosts = allPostsData.filter(p => String(p.user_uid) === String(currentUser.uid));
+      renderPostList(myPosts, allCommentsData, document.getElementById('myPostsContainer'));
     }
 
     function renderPostList(posts, comments, container) {
-      if (!posts || posts.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:30px; color:#8e8e93; font-size:12px;">暂无动态内容</div>';
-        return;
-      }
-
+      if (!posts || posts.length === 0) { container.innerHTML = '<div style="text-align:center; padding:30px; color:#8e8e93; font-size:12px;">暂无动态内容</div>'; return; }
       container.innerHTML = posts.map(post => {
         const postComments = comments ? comments.filter(c => c.post_id === post.id) : [];
         const realProfile = userProfilesMap.get(String(post.user_uid)) || userProfilesMap.get(String(post.author)) || {};
-
         const displayUid = post.user_uid || realProfile.uid || '';
         const displayAvatar = realProfile.avatar || DEFAULT_AVATAR;
-        const displayAuthorName = realProfile.username || post.author || '未知用户';
-        const isDevUser = realProfile.is_admin === true || realProfile.is_admin === 'true';
-        
+        const displayAuthor = realProfile.username || post.author || '未知用户';
+        const isDev = realProfile.is_admin === true || realProfile.is_admin === 'true';
         const isMyPost = String(displayUid) === String(currentUser.uid) || post.author === currentUser.name;
         const isLiked = !!myLikedPostsMap[post.id];
-        const isPinnedBool = post.is_pinned === true || post.is_pinned === 'true' || post.is_pinned === 1;
+        const isPinned = post.is_pinned===true||post.is_pinned==='true'||post.is_pinned===1;
 
         return `
-          <div class="post-card ${isPinnedBool ? 'pinned' : ''}">
+          <div class="post-card ${isPinned?'pinned':''}">
             <div class="post-header">
-              <div class="author-info" onclick="openUserProfileModal('${displayUid}', '${escapeHtml(displayAuthorName)}')">
+              <div class="author-info" onclick="openUserProfileModal('${displayUid}','${escapeHtml(displayAuthor)}')">
                 <img class="user-avatar-img" src="${displayAvatar}" onerror="handleAvatarError(this)">
                 <div>
                   <div class="post-author-name">
-                    ${isPinnedBool ? `<span class="pin-badge"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-pin"></use></svg> 置顶</span>` : ''}
-                    ${escapeHtml(displayAuthorName)}
-                    ${isDevUser ? `<span class="dev-badge">开发者管理员</span>` : ''}
+                    ${isPinned?`<span class="pin-badge"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-pin"></use></svg> 置顶</span>`:''}
+                    ${escapeHtml(displayAuthor)}
+                    ${isDev?`<span class="dev-badge">开发者管理员</span>`:''}
                   </div>
                   <div class="post-time">${formatBeijingTime(post.created_at)}</div>
                 </div>
               </div>
-
               <div class="mini-action-group">
-                ${currentUser.isAdmin ? `
-                  <button class="mini-btn" title="${isPinnedBool ? '取消置顶' : '置顶动态'}" onclick="playIosClickSound(); togglePinPost(${post.id}, ${isPinnedBool});">
-                    <svg class="icon-svg" style="${isPinnedBool ? 'color:#007aff;' : ''}" viewBox="0 0 24 24"><use href="#svg-pin"></use></svg>
-                  </button>
-                ` : ''}
-                ${(isMyPost || currentUser.isAdmin) ? `
-                  <button class="mini-btn" onclick="playIosClickSound(); confirmDeletePost(${post.id});">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-trash"></use></svg>
-                  </button>
-                ` : ''}
+                ${currentUser.isAdmin?`<button class="mini-btn" title="${isPinned?'取消置顶':'置顶'}" onclick="playIosClickSound();togglePinPost(${post.id},${isPinned});"><svg class="icon-svg" style="${isPinned?'color:#007aff;':''}" viewBox="0 0 24 24"><use href="#svg-pin"></use></svg></button>`:''}
+                ${(isMyPost||currentUser.isAdmin)?`<button class="mini-btn" onclick="playIosClickSound();confirmDeletePost(${post.id});"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-trash"></use></svg></button>`:''}
               </div>
             </div>
-
             <div class="post-content">${escapeHtml(post.content)}</div>
-            ${post.image_url ? `<img class="post-image" src="${escapeHtml(post.image_url)}">` : ''}
-
+            ${post.image_url?`<img class="post-image" src="${escapeHtml(post.image_url)}">`:''}
             <div class="post-footer">
               <div class="action-group">
-                <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="playIosClickSound(); likePost(${post.id}, ${post.likes || 0});">
-                  <svg class="icon-svg" viewBox="0 0 24 24"><use href="#${isLiked ? 'svg-heart-filled' : 'svg-heart-outline'}"></use></svg>
-                  <span>${post.likes || 0}</span>
+                <button class="action-btn ${isLiked?'liked':''}" onclick="playIosClickSound();likePost(${post.id},${post.likes||0});">
+                  <svg class="icon-svg" viewBox="0 0 24 24"><use href="#${isLiked?'svg-heart-filled':'svg-heart-outline'}"></use></svg>
+                  <span>${post.likes||0}</span>
                 </button>
               </div>
             </div>
-
             <div class="comments-section">
               ${postComments.map(c => {
-                const commentProfile = userProfilesMap.get(String(c.user_uid)) || userProfilesMap.get(String(c.username)) || {};
-                const commentAuthorName = commentProfile.username || c.username || '未知用户';
-                return `
-                  <div class="comment-item">
-                    <div class="comment-left">
-                      <span class="comment-author" onclick="openUserProfileModal('${c.user_uid || ''}', '${escapeHtml(commentAuthorName)}')">${escapeHtml(commentAuthorName)}</span>:
-                      <span onclick="replyCommentUser(${post.id}, '${escapeHtml(commentAuthorName)}')">${escapeHtml(c.content)}</span>
-                      <span class="comment-time">${formatBeijingTime(c.created_at)}</span>
-                    </div>
-                    ${(c.username === currentUser.name || currentUser.isAdmin) ? `
-                      <button class="mini-btn" onclick="playIosClickSound(); confirmDeleteComment(${c.id});">✕</button>
-                    ` : ''}
+                const cp = userProfilesMap.get(String(c.user_uid)) || {};
+                const cn = cp.username || c.username || '未知用户';
+                return `<div class="comment-item">
+                  <div class="comment-left">
+                    <span class="comment-author" onclick="openUserProfileModal('${c.user_uid||''}','${escapeHtml(cn)}')">${escapeHtml(cn)}</span>:
+                    <span onclick="replyCommentUser(${post.id},'${escapeHtml(cn)}')">${escapeHtml(c.content)}</span>
+                    <span class="comment-time">${formatBeijingTime(c.created_at)}</span>
                   </div>
-                `;
+                  ${(c.username===currentUser.name||currentUser.isAdmin)?`<button class="mini-btn" onclick="playIosClickSound();confirmDeleteComment(${c.id});">✕</button>`:''}
+                </div>`;
               }).join('')}
               <div class="comment-input-group">
                 <input type="text" id="commentInput_${post.id}" class="comment-input" placeholder="评论或回复...">
-                <button class="comment-btn" onclick="playIosClickSound(); addComment(${post.id});">发送</button>
+                <button class="comment-btn" onclick="playIosClickSound();addComment(${post.id});">发送</button>
               </div>
             </div>
           </div>
@@ -1347,127 +1212,76 @@
       if (myLikedPostsMap[id]) return;
       myLikedPostsMap[id] = true;
       saveUserDataToLocal();
-      await _supabase.from('posts').update({ likes: (currentLikes || 0) + 1 }).eq('id', id);
+      await _supabase.from('posts').update({ likes: (currentLikes||0)+1 }).eq('id', id);
       fetchPosts();
     }
 
-    function confirmDeletePost(postId) {
-      showIosAlert('确认删除该动态？', '删除后无法恢复。', false, async () => {
-        await _supabase.from('posts').delete().eq('id', postId);
-        fetchPosts();
-      });
-    }
-
-    function confirmDeleteComment(commentId) {
-      showIosAlert('确认删除该评论？', '删除后无法恢复。', false, async () => {
-        await _supabase.from('comments').delete().eq('id', commentId);
-        fetchPosts();
-      });
-    }
+    function confirmDeletePost(id) { showIosAlert('确认删除？','删除后无法恢复。',false, async()=>{ await _supabase.from('posts').delete().eq('id',id); fetchPosts(); }); }
+    function confirmDeleteComment(id) { showIosAlert('确认删除？','删除后无法恢复。',false, async()=>{ await _supabase.from('comments').delete().eq('id',id); fetchPosts(); }); }
 
     async function addComment(postId) {
       const input = document.getElementById(`commentInput_${postId}`);
-      let content = input.value.trim();
+      const content = input.value.trim();
       if (!content) return;
-
-      const { error } = await _supabase.from('comments').insert([{ 
-        post_id: postId, 
-        username: currentUser.name, 
-        user_uid: String(currentUser.uid),
-        content: content 
-      }]);
-
-      if (error) {
-        showIosAlert("发送失败", error.message || "评论发布失败", false, null);
-        return;
-      }
-
-      input.value = '';
-      await fetchPosts();
+      const { error } = await _supabase.from('comments').insert([{ post_id:postId, username:currentUser.name, user_uid:String(currentUser.uid), content }]);
+      if (error) { showIosAlert("发送失败",error.message,false); return; }
+      input.value = ''; await fetchPosts();
     }
 
+    function replyCommentUser(postId, targetName) {
+      playIosClickSound();
+      const input = document.getElementById(`commentInput_${postId}`);
+      if (input) { input.value = `@${targetName} `; input.focus(); }
+    }
+
+    /* ============================================================
+       🖼️ 头像 & 发帖 & 编辑资料
+       ============================================================ */
     function openAvatarChoiceModal() { document.getElementById('avatarChoiceModal').style.display = 'flex'; }
     function closeAvatarChoiceModal() { document.getElementById('avatarChoiceModal').style.display = 'none'; selectedAvatarBase64 = null; }
 
-    function handleAvatarFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) { selectedAvatarBase64 = e.target.result; };
-        reader.readAsDataURL(file);
-      }
+    function handleAvatarFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) { const r = new FileReader(); r.onload = ev => selectedAvatarBase64 = ev.target.result; r.readAsDataURL(file); }
     }
 
     function applyNewAvatar() {
       const qq = document.getElementById('quickQqInput').value.trim();
-      if (selectedAvatarBase64) {
-        currentUser.avatar = selectedAvatarBase64;
-      } else if (qq.length >= 5) {
-        currentUser.avatar = `https://q1.qlogo.cn/g?b=qq&nk=${qq}&s=640`;
-      } else {
-        showIosAlert("提示", "请先选取图片或输入有效 QQ 号！", false, null);
-        return;
-      }
-
-      saveUserDataToLocal();
-      syncUserProfileToDb();
-      updateProfileUI();
-      closeAvatarChoiceModal();
-      fetchPosts();
+      if (selectedAvatarBase64) currentUser.avatar = selectedAvatarBase64;
+      else if (qq.length >= 5) currentUser.avatar = `https://q1.qlogo.cn/g?b=qq&nk=${qq}&s=640`;
+      else { showIosAlert("提示","请选取图片或输入有效 QQ 号！",false); return; }
+      saveUserDataToLocal(); syncUserProfileToDb(); updateProfileUI(); closeAvatarChoiceModal(); fetchPosts();
     }
 
-    function handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) { selectedBase64Image = e.target.result; };
-        reader.readAsDataURL(file);
-      }
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) { const r = new FileReader(); r.onload = ev => selectedBase64Image = ev.target.result; r.readAsDataURL(file); }
     }
 
-    function openPublishModal() { 
-      const pinLabel = document.getElementById('pinOptionLabel');
-      if (pinLabel) {
-        pinLabel.style.display = currentUser.isAdmin ? 'flex' : 'none';
-      }
-      document.getElementById('publishModal').style.display = 'flex'; 
+    function openPublishModal() {
+      document.getElementById('pinOptionLabel').style.display = currentUser.isAdmin ? 'flex' : 'none';
+      document.getElementById('publishModal').style.display = 'flex';
     }
-
     function closePublishModal() { document.getElementById('publishModal').style.display = 'none'; }
 
     async function submitPost() {
-      let content = document.getElementById('contentInput').value.trim();
-      if (!content && !selectedBase64Image) { showIosAlert("提示", "内容不能为空！", false, null); return; }
-
+      const content = document.getElementById('contentInput').value.trim();
+      if (!content && !selectedBase64Image) { showIosAlert("提示","内容不能为空！",false); return; }
       const shouldPin = currentUser.isAdmin && document.getElementById('pinPostCheckbox')?.checked;
-
-      await _supabase.from('posts').insert([{
-        author: currentUser.name,
-        user_uid: String(currentUser.uid),
-        content: content,
-        likes: 0,
-        is_pinned: !!shouldPin,
-        image_url: selectedBase64Image
-      }]);
-
+      showLoadingOverlay('发布中…');
+      await _supabase.from('posts').insert([{ author:currentUser.name, user_uid:String(currentUser.uid), content, likes:0, is_pinned:!!shouldPin, image_url:selectedBase64Image }]);
+      hideLoadingOverlay();
       document.getElementById('contentInput').value = '';
-      if (document.getElementById('pinPostCheckbox')) {
-        document.getElementById('pinPostCheckbox').checked = false;
-      }
-      selectedBase64Image = null;
-      closePublishModal();
-      fetchPosts();
+      if (document.getElementById('pinPostCheckbox')) document.getElementById('pinPostCheckbox').checked = false;
+      selectedBase64Image = null; closePublishModal(); fetchPosts();
     }
 
     function onSearchInput() {
       const kw = document.getElementById('searchInput').value.trim().toLowerCase();
-      const container = document.getElementById('postsContainer');
-      if (!kw) { renderPostList(allPostsData, allCommentsData, container); return; }
-      const filtered = allPostsData.filter(p => 
-        (p.content && p.content.toLowerCase().includes(kw)) || 
-        (p.author && p.author.toLowerCase().includes(kw))
-      );
-      renderPostList(filtered, allCommentsData, container);
+      const c = document.getElementById('postsContainer');
+      if (!kw) { renderPostList(allPostsData, allCommentsData, c); return; }
+      const filtered = allPostsData.filter(p => (p.content&&p.content.toLowerCase().includes(kw)) || (p.author&&p.author.toLowerCase().includes(kw)));
+      renderPostList(filtered, allCommentsData, c);
     }
 
     function openEditProfileModal() { document.getElementById('editProfileModal').style.display = 'flex'; }
@@ -1476,43 +1290,44 @@
     function saveProfile() {
       const name = document.getElementById('editNameInput').value.trim();
       const bio = document.getElementById('editBioInput').value.trim();
-
       if (name) currentUser.name = name;
       if (bio) currentUser.bio = bio;
-
-      saveUserDataToLocal();
-      syncUserProfileToDb();
-      updateProfileUI();
-      closeEditProfileModal();
-      fetchPosts();
+      saveUserDataToLocal(); syncUserProfileToDb(); updateProfileUI(); closeEditProfileModal(); fetchPosts();
     }
 
-    function formatBeijingTime(utcDateStr) {
-      if (!utcDateStr) return '';
-      const date = new Date(utcDateStr);
-      return isNaN(date.getTime()) ? '' : date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+    /* ============================================================
+       🛠️ 工具函数
+       ============================================================ */
+    function formatBeijingTime(utc) {
+      if (!utc) return '';
+      const d = new Date(utc);
+      return isNaN(d.getTime()) ? '' : d.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     }
-
     function escapeHtml(str) {
-      return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;') : '';
+      return str ? str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;') : '';
     }
 
-    /* 🍏 页面初始化与启动动画隐藏逻辑 */
+    /* ============================================================
+       🚀 页面初始化
+       ============================================================ */
     window.onload = function() {
-      syncUserProfileToDb();
-      updateProfileUI();
-      fetchPosts();
-
+      // 开屏动画
       setTimeout(() => {
         const splash = document.getElementById('splashScreen');
-        if (splash) {
-          splash.classList.add('fade-out');
-          setTimeout(() => {
-            splash.style.display = 'none';
-          }, 600);
-        }
+        if (splash) { splash.classList.add('fade-out'); setTimeout(() => splash.style.display = 'none', 600); }
       }, 1200);
+
+      if (!currentUser.uid) {
+        document.getElementById('authOverlay').style.display = 'flex';
+      } else {
+        updateProfileUI();
+        fetchPosts();
+        setupGlobalMessageListener();
+        renderChatList();
+      }
+      updateNavBadge();
     };
   </script>
 </body>
 </html>
+
