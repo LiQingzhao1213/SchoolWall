@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -10,32 +10,45 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: 🔒 Inject Supabase Credentials
+      - name: Inject Supabase Config
         run: |
-          # 从 GitHub Secrets 读取（绝不明文存储）
-          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
-          SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
-
-          # 注入到 HTML 的 meta 标签中
-          sed -i "s|__SUPABASE_URL__|${SUPABASE_URL}|g" index.html
-          sed -i "s|__SUPABASE_ANON_KEY__|${SUPABASE_ANON_KEY}|g" index.html
+          python3 - <<'EOF'
+          import os
+          with open('index.html', 'r', encoding='utf-8') as f:
+              content = f.read()
+          url = os.environ['URL']
+          key = os.environ['KEY']
+          content = content.replace('__SUPABASE_URL__', url)
+          content = content.replace('__SUPABASE_ANON_KEY__', key)
+          with open('index.html', 'w', encoding='utf-8') as f:
+              f.write(content)
+          print("替换完成！")
+          EOF
+        env:
+          URL: ${{ secrets.supabase_url }}
+          KEY: ${{ secrets.supabase_anon_key }}
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: '.'
+          path: "."
 
       - name: Deploy to GitHub Pages
         id: deployment
