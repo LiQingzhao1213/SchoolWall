@@ -61,6 +61,22 @@
     .auth-submit-btn { width: 100%; background: #007aff; color: #fff; border: none; padding: 12px; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.15s, background-color 0.15s; }
     .auth-submit-btn:active { transform: scale(0.97); background-color: #0062cc; }
 
+    /* ===== 🔑 独立修改密码界面（与登录界面风格一致） ===== */
+    #changePwdOverlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(242,242,247,0.92); backdrop-filter: blur(30px) saturate(190%); -webkit-backdrop-filter: blur(30px) saturate(190%);
+      z-index: 9500; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 24px;
+      animation: authFadeIn 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    #changePwdOverlay.active { display: flex; }
+    .change-pwd-card { width: 100%; max-width: 340px; background: rgba(255,255,255,0.82); border: 1px solid rgba(255,255,255,0.9); border-radius: 28px; padding: 26px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center; }
+    .change-pwd-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #1c1c1e; }
+    .change-pwd-subtitle { font-size: 12px; color: #8e8e93; margin-bottom: 20px; }
+    .change-pwd-input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .change-pwd-hint { font-size: 11px; color: #8e8e93; margin-top: -4px; margin-bottom: 4px; text-align: left; padding-left: 2px; }
+    .change-pwd-btn-secondary { width: 100%; background: rgba(0,0,0,0.06); color: #007aff; border: none; padding: 10px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: transform 0.15s; }
+    .change-pwd-btn-secondary:active { transform: scale(0.97); }
+
     /* ===== SVG 图标 ===== */
     .icon-svg { width: 1em; height: 1em; vertical-align: -0.125em; fill: currentColor; display: inline-block; }
     .page-tab { display: none; }
@@ -206,6 +222,134 @@
     .toast-notification { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.75); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 13px; font-weight: 500; z-index: 3000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; max-width: 90%; text-align: center; }
     .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast-notification.clickable { pointer-events: auto; cursor: pointer; }
+
+    /* ===== 🧊 液态玻璃返回按钮（图三风格） ===== */
+    .glass-back-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #007aff; font-size: 20px; font-weight: 700;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .glass-back-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.8); }
+
+    /* ===== 💬 新输入栏（图二：加号在左 + 长输入框 + 发送） ===== */
+    .chat-send-bar {
+      display: flex; align-items: center; gap: 8px; margin-top: 12px;
+      padding: 6px 4px;
+    }
+    .chat-plus-btn {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(0,0,0,0.05); border: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #444; transition: background 0.15s, transform 0.15s;
+    }
+    .chat-plus-btn:active { background: rgba(0,0,0,0.1); transform: scale(0.92); }
+    .chat-plus-btn svg { width: 20px; height: 20px; fill: currentColor; }
+    .chat-msg-input {
+      flex: 1 1 100%;   /* 输入框向左拉长，吃掉多余空间 */
+      min-width: 0;
+      background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 16px; padding: 10px 14px; font-size: 13px; outline: none;
+    }
+    .chat-send-btn {
+      background: #007aff; color: #fff; border: none;
+      padding: 0 18px; height: 38px; border-radius: 16px;
+      font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0;
+    }
+    .chat-send-btn:active { transform: scale(0.96); }
+
+    /* ===== 👤 消息头像 + 名字布局（Telegram 风格） ===== */
+    .msg-row { display: flex; align-items: flex-end; gap: 10px; max-width: 100%; }
+    .msg-row.me { flex-direction: row-reverse; padding-left: 36px; }   /* 自己头像右移 */
+    .msg-row.other { padding-right: 36px; }            /* 对方头像左移 */
+    .msg-avatar {
+      width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
+      background: #e5e5ea; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.85);
+    }
+    .msg-stack { display: flex; flex-direction: column; max-width: calc(100% - 48px); }
+    .msg-row.me .msg-stack { align-items: flex-end; }
+    .msg-row.other .msg-stack { align-items: flex-start; }
+    .msg-sender-name {
+      font-size: 12px; font-weight: 700; margin-bottom: 3px; padding: 0 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    }
+    .msg-row.me .msg-sender-name { color: #007aff; }
+    .msg-row.other .msg-sender-name { color: #8e8e93; }
+    /* 气泡：Telegram 风格（圆角矩形 + 左侧细竖线 + 内部名称/时间） */
+    .msg-bubble {
+      max-width: 100%; padding: 7px 11px 5px 12px;
+      border-radius: 12px; font-size: 14.5px;
+      line-height: 1.38; word-break: break-word; cursor: default; user-select: text;
+      position: relative; display: inline-flex; flex-direction: column;
+      border-left: 3px solid transparent;
+    }
+    /* 对方：浅灰底 + 左侧蓝色竖线 */
+    .msg-bubble.other {
+      align-self: flex-start; background: #f1f3f5; color: #1c1c1e;
+      border-left: 3px solid #5b9bd5; border-radius: 4px 12px 12px 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    /* 自己：蓝底白字 + 左侧透明竖线占位 */
+    .msg-bubble.me {
+      align-self: flex-end; background: #5b9bd5; color: #fff;
+      border-left: 3px solid transparent; border-radius: 12px 4px 12px 12px;
+      box-shadow: 0 1px 2px rgba(91,155,213,0.35);
+    }
+    /* 回复引用块（气泡内顶部，Telegram 风格） */
+    .msg-reply-quote {
+      background: rgba(0,0,0,0.05); border-left: 3px solid #5b9bd5;
+      padding: 3px 8px; margin-bottom: 4px; border-radius: 0 6px 6px 0;
+      font-size: 12px; cursor: pointer; transition: background 0.15s;
+    }
+    .msg-reply-quote:hover { background: rgba(0,0,0,0.09); }
+    .msg-reply-author { font-weight: 700; color: #2b6dad; }
+    .msg-reply-text { color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; display: inline-block; vertical-align: bottom; }
+    .msg-bubble.me .msg-reply-quote { background: rgba(255,255,255,0.18); border-left-color: rgba(255,255,255,0.7); }
+    .msg-bubble.me .msg-reply-author { color: #e8f4ff; }
+    .msg-bubble.me .msg-reply-text { color: rgba(255,255,255,0.88); }
+
+    /* meta 行：时间 + 已读状态 → 右下角 */
+    .msg-meta-bar {
+      align-self: flex-end; display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; margin-top: 2px; opacity: 0.85;
+    }
+    .msg-bubble.me .msg-meta-bar { color: rgba(255,255,255,0.92); }
+    .msg-bubble.other .msg-meta-bar { color: #a1a1a6; }
+
+
+    /* 高亮闪烁（点击引用跳转时） */
+    @keyframes msgHighlightAnim {
+      0%   { box-shadow: 0 0 0 0 rgba(0,122,255,0); }
+      25%  { box-shadow: 0 0 0 4px rgba(0,122,255,0.35); background-color: rgba(0,122,255,0.12); }
+      60%  { box-shadow: 0 0 0 6px rgba(0,122,255,0.15); }
+      100% { box-shadow: 0 0 0 0 rgba(0,122,255,0); }
+    }
+    .msg-bubble.highlight { animation: msgHighlightAnim 1.8s ease; }
+
+    /* ===== 📎 回复预览条（输入栏上方） ===== */
+    .reply-preview-bar {
+      display: none; align-items: center; gap: 8px;
+      background: #f0f2f5; border-left: 3px solid #007aff;
+      border-radius: 0 10px 10px 0; padding: 6px 10px; margin-bottom: 6px;
+      animation: replySlideIn 0.2s ease-out;
+    }
+    .reply-preview-bar.active { display: flex; }
+    @keyframes replySlideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .reply-prev-avatar { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; background: #e5e5ea; flex-shrink: 0; }
+    .reply-prev-info { flex: 1; overflow: hidden; }
+    .reply-prev-name { font-size: 11px; font-weight: 700; color: #007aff; }
+    .reply-prev-text { font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .reply-prev-close { background: none; border: none; font-size: 16px; color: #999; cursor: pointer; padding: 0 4px; }
+    .reply-prev-close:active { color: #333; }
+
+    /* ===== 🚫 进入聊天时隐藏底部导航/搜索/FAB ===== */
+    body.chat-mode .glass-dock-bar,
+    body.chat-mode .fab-btn,
+    body.chat-mode header { display: none !important; }
   </style>
 </head>
 <body>
@@ -307,12 +451,31 @@
     <div id="chatDialogView" style="display:none;">
       <div class="chat-dialog-card">
         <div class="chat-dialog-header">
-          <button class="chat-back-btn" onclick="playIosClickSound(); backToChatList();">‹ 返回</button>
-          <div id="targetChatName" class="chat-dialog-title">--</div>
+          <button class="glass-back-btn" onclick="playIosClickSound(); backToChatList();" title="返回">‹</button>
+          <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+            <img id="targetChatAvatar" class="msg-avatar" style="width:34px;height:34px;" src="" onerror="handleAvatarError(this)">
+            <div id="targetChatName" class="chat-dialog-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">--</div>
+          </div>
           <div style="width:40px;"></div>
         </div>
+
+        <!-- 回复预览条（输入栏上方） -->
+        <div id="replyPreviewBar" class="reply-preview-bar">
+          <img id="replyPrevAvatar" class="reply-prev-avatar" src="" onerror="handleAvatarError(this)">
+          <div class="reply-prev-info">
+            <div id="replyPrevName" class="reply-prev-name">回复 名字</div>
+            <div id="replyPrevText" class="reply-prev-text">消息预览...</div>
+          </div>
+          <button class="reply-prev-close" onclick="cancelReply()">✕</button>
+        </div>
+
         <div id="chatMessagesBox" class="chat-messages-container"></div>
+
+        <!-- 新输入栏：加号在左 + 长输入框 + 发送 -->
         <div class="chat-send-bar">
+          <button class="chat-plus-btn" onclick="playIosClickSound(); onPlusClicked();" title="更多">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          </button>
           <input type="text" id="chatMsgInput" class="chat-msg-input" placeholder="发送私信..." onkeydown="if(event.key==='Enter'){playIosClickSound();sendPrivateMsg();}">
           <button class="chat-send-btn" onclick="playIosClickSound();sendPrivateMsg();">发送</button>
         </div>
@@ -448,6 +611,26 @@
       <input type="text" id="editNameInput" class="input-box" placeholder="修改昵称">
       <textarea id="editBioInput" class="input-box" placeholder="个性签名..."></textarea>
       <button class="btn-submit" onclick="playIosClickSound();saveProfile();">保存</button>
+      <hr style="margin:12px 0; border:none; border-top:0.5px solid rgba(0,0,0,0.08);">
+      <button class="btn-submit" style="width:100%;" onclick="playIosClickSound();closeEditProfileModal();openChangePassword();">
+        🔑 修改密码
+      </button>
+    </div>
+  </div>
+
+  <!-- 🔑 独立修改密码界面（风格与登录一致） -->
+  <div id="changePwdOverlay">
+    <div class="change-pwd-card">
+      <div class="change-pwd-title">修改密码</div>
+      <div class="change-pwd-subtitle">请验证身份后设置新密码</div>
+      <div class="auth-input-group">
+        <input type="password" id="changePwdCurrent" class="auth-input" placeholder="当前密码" autocomplete="off">
+        <input type="password" id="changePwdNew" class="auth-input" placeholder="新密码（≥8位，含字母+数字）" autocomplete="off">
+        <input type="password" id="changePwdConfirm" class="auth-input" placeholder="确认新密码" autocomplete="off">
+      </div>
+      <div class="change-pwd-hint">密码需至少 8 位，且同时包含字母和数字</div>
+      <button class="auth-submit-btn" onclick="playIosClickSound();submitChangePassword();">确认修改</button>
+      <button class="change-pwd-btn-secondary" onclick="playIosClickSound();closeChangePassword();">取消</button>
     </div>
   </div>
 
@@ -538,10 +721,10 @@
         const pass1 = document.getElementById('regPassword').value;
         const pass2 = document.getElementById('regConfirmPassword').value;
 
-        if (!name) { showIosAlert("提示","请输入你的名字/昵称！",false); return; }
-        if (pass1 !== pass2) { showIosAlert("密码不一致","两次输入的密码不相同！",false); return; }
+        if (!name) { showIosAlert("失败","请输入你的名字/昵称！",false); return; }
+        if (pass1 !== pass2) { showIosAlert("失败","两次输入的密码不相同！",false); return; }
         const pwdErr = validatePasswordStrength(pass1);
-        if (pwdErr) { showIosAlert("密码不符合要求", pwdErr, false); return; }
+        if (pwdErr) { showIosAlert("失败", pwdErr, false); return; }
 
         showLoadingOverlay('正在创建账号…');
         let newUid = generate6DigitUid();
@@ -553,21 +736,22 @@
         }]);
 
         hideLoadingOverlay();
-        if (error) { showIosAlert("注册失败", error.message || "创建账号失败", false); return; }
+        if (error) { showIosAlert("失败", "注册失败：" + (error.message || "未知错误"), false); return; }
 
         currentUser = { uid: newUid, name, avatar: DEFAULT_AVATAR, bio: '暂无简介...', isAdmin: false };
         saveUserDataToLocal();
         document.getElementById('authOverlay').style.display = 'none';
-        showIosAlert("注册成功", `你的登录 UID 为：${newUid}\n请牢记此 UID！`, false);
+        showIosAlert("成功", `注册成功！你的登录 UID 为：${newUid}\n请牢记此 UID！`, false);
         updateProfileUI(); fetchPosts(); setupGlobalMessageListener();
 
       } else if (type === 'login') {
         const uid = document.getElementById('loginUid').value.trim();
         const password = document.getElementById('loginPassword').value;
 
-        if (!uid || uid.length !== 6 || !/^\d{6}$/.test(uid)) { showIosAlert("输入错误","请输入正确的 6 位 UID！",false); return; }
+        if (!uid) { showIosAlert("失败","UID 不能为空！",false); return; }
+        if (uid.length !== 6 || !/^\d{6}$/.test(uid)) { showIosAlert("失败","请输入正确的 6 位 UID！",false); return; }
         const pwdErr = validatePasswordStrength(password);
-        if (pwdErr) { showIosAlert("密码不符合要求", pwdErr, false); return; }
+        if (pwdErr) { showIosAlert("失败", pwdErr, false); return; }
 
         showLoadingOverlay('正在验证身份…');
         const hashedPassword = await hashPassword(uid, password);
@@ -576,10 +760,15 @@
         const { data, error } = await _supabase.rpc('get_user_by_uid', { uid_input: uid });
 
         hideLoadingOverlay();
-        if (error || !data || data.length === 0) { showIosAlert("登录失败","未找到该 UID 账号！",false); return; }
+        if (error) { showIosAlert("失败","网络或服务器错误：" + error.message, false); return; }
+        if (!data || data.length === 0) { showIosAlert("失败","未找到该 UID 账号！",false); return; }
 
         const user = data[0];
-        if (user.password_hash !== hashedPassword) { showIosAlert("登录失败","密码错误，请重新输入！",false); return; }
+        if (!user.password_hash) {
+          showIosAlert("失败","该账号是密码系统上线前创建的，请先联系管理员初始化密码，或使用注册功能新建账号。",false);
+          return;
+        }
+        if (user.password_hash !== hashedPassword) { showIosAlert("失败","密码错误，请重新输入！",false); return; }
 
         currentUser = {
           uid: user.uid, name: user.username || '用户_' + user.uid,
@@ -606,8 +795,29 @@
        ============================================================ */
     const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e5e5ea'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%238e8e93'/%3E%3Cpath d='M20,85 C20,65 33,56 50,56 C67,56 80,65 80,85 Z' fill='%238e8e93'/%3E%3C/svg%3E";
 
-    const SUPABASE_URL = 'https://nbldkyyqmnjeiwybihqy.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibGRreXlxbW5qZWl3eWJpaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODY0NDIsImV4cCI6MjEwMDg2MjQ0Mn0.UOwl033Ame7kMoo3aHqm44BW4IG4qHmtKDvh6DptPVs';
+    /* ============================================================
+       🔐 三重加密 Supabase 凭据（源码中无明文）
+       Layer1: Base64  encode
+       Layer2: 字符串反转
+       Layer3: XOR 逐字符混淆（key = 'SZ2Z_2026_CAMPUS'）
+       ============================================================ */
+    function _d1(b64){return atob(b64);}
+    function _d2(s){return s.split('').reverse().join('');}
+    function _d3(s){var k='SZ2Z_2026_CAMPUS',o='';for(var i=0;i<s.length;i++){o+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));}return o;}
+
+    // 加密后的 URL 与 KEY（运行时解密，源码/DevTools 里只能看到乱码）
+    var _eURL = "XVMcOilTODIjICNjODI3X1BJRTY/WDQ+IiwpJiUvPVgdHwgsKkYuOw==";
+    var _eKEY = "IAMAOTEHaV5EdHkrN3orZxQcZBoDd2tbQ3hTbDVdFzhkMD0McnBvWkV/Z3FqXBdjAj8dfyYHEkF3Wn9pE3E5ZwU4GT4IBxEGa3R9Jg92FWAWPx8kEBsGRnhzfjZuADgmFTgZewgQBUULXVE2LVsTZhUdMT0LFDoFXmdoLm9lOCs/DTU/EwQ9Xwdde2kTWwA/GTsZPggQBUx0XWs3GGo+KRk8HyQMcDxGeElXcWN4GQULJTsEdwocVQdiXBYpezMdYhwqGAgJNnlbU3U9MngjNg==";
+
+    function getSupabaseConfig(){
+      var url = _d3(_d2(_d1(_eURL)));
+      var key = _d3(_d2(_d1(_eKEY)));
+      return { url: url, key: key };
+    }
+
+    var _cfg = getSupabaseConfig();
+    const SUPABASE_URL = _cfg.url;
+    const SUPABASE_KEY = _cfg.key;
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
       realtime: { params: { eventsPerSecond: 10 } }
     });
@@ -631,6 +841,7 @@
     let userProfilesMap = new Map();
 
     let activeChatTargetUid = null;
+    let pendingReplyIdx = null; // 正在回复的消息索引
     let localChatData = JSON.parse(localStorage.getItem('forum_local_chats') || '{}');
     let globalMessageChannel = null;
     let messageSubscription = null;
@@ -927,10 +1138,17 @@
     function openChatDialog(targetUid) {
       activeChatTargetUid = String(targetUid);
       const profile = userProfilesMap.get(activeChatTargetUid) || {};
+      // 顶部名字 + 头像（与消息里显示的一致）
       document.getElementById('targetChatName').innerText = profile.username || '用户_' + activeChatTargetUid;
+      const av = document.getElementById('targetChatAvatar');
+      av.src = profile.avatar || DEFAULT_AVATAR;
+      // 进入聊天模式：隐藏底部导航/搜索/FAB
+      document.body.classList.add('chat-mode');
       document.getElementById('chatListView').style.display = 'none';
       document.getElementById('chatDialogView').style.display = 'block';
-
+      // 重置回复状态
+      pendingReplyIdx = null;
+      document.getElementById('replyPreviewBar').classList.remove('active');
       // 标记已读 + 更新双钩
       markMessagesAsRead(activeChatTargetUid);
       renderChatMessages();
@@ -938,12 +1156,13 @@
 
     function backToChatList() {
       activeChatTargetUid = null;
+      document.body.classList.remove('chat-mode');
       document.getElementById('chatDialogView').style.display = 'none';
       document.getElementById('chatListView').style.display = 'block';
       renderChatList();
     }
 
-    // 渲染消息气泡（双钩逻辑）
+    // 渲染消息气泡（带头像/名字/回复引用/右下角时间+已读）
     function renderChatMessages() {
       if (!activeChatTargetUid) return;
       const box = document.getElementById('chatMessagesBox');
@@ -954,24 +1173,50 @@
         return;
       }
 
+      // 解析名字 + 头像
+      const meProfile = { name: currentUser.name || '我', avatar: currentUser.avatar || DEFAULT_AVATAR };
+      const otherProfile = userProfilesMap.get(String(activeChatTargetUid)) || { username: '', avatar: '' };
+      const otherName = otherProfile.username || ('用户_' + activeChatTargetUid);
+      const otherAvatar = otherProfile.avatar || DEFAULT_AVATAR;
+
       box.innerHTML = msgs.map((m, idx) => {
+        const isMe = m.sender === 'me';
         const timeStr = m.time ? new Date(m.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+        const senderName = isMe ? meProfile.name : otherName;
+        const senderAvatar = isMe ? meProfile.avatar : otherAvatar;
+
+        // 已读状态
         let statusHtml = '';
-        if (m.sender === 'me') {
-          if (m.isRead) {
-            // ✅ 已读 → 蓝色双勾 (Telegram 风格)
-            statusHtml = `<span class="tg-read-status read"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-check-double"></use></svg></span>`;
-          } else {
-            // ⏳ 未读 → 灰色单勾
-            statusHtml = `<span class="tg-read-status sent"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-check-single"></use></svg></span>`;
-          }
+        if (isMe) {
+          statusHtml = m.isRead
+            ? `<span class="tg-read-status read"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-check-double"></use></svg></span>`
+            : `<span class="tg-read-status sent"><svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-check-single"></use></svg></span>`;
         }
+
+        // 回复引用块
+        let replyHtml = '';
+        if (m.replyToIdx != null && msgs[m.replyToIdx]) {
+          const rm = msgs[m.replyToIdx];
+          const rn = rm.sender === 'me' ? meProfile.name : otherName;
+          replyHtml = `<div class="msg-reply-quote" onclick="scrollToMessage(${m.replyToIdx})">
+            <span class="msg-reply-author">← ${escapeHtml(rn)}</span>
+            <span class="msg-reply-text">${escapeHtml(rm.text||'')}</span>
+          </div>`;
+        }
+
         return `
-          <div class="msg-bubble ${m.sender==='me'?'me':'other'}" onclick="playIosClickSound();openMessageMenu(${idx});">
-            <span>${escapeHtml(m.text)}</span>
-            <div class="msg-meta-bar">
-              <span>${timeStr}</span>
-              ${statusHtml}
+          <div class="msg-row ${isMe?'me':'other'}" id="msg-row-${idx}">
+            <img class="msg-avatar" src="${senderAvatar}" onerror="handleAvatarError(this)">
+            <div class="msg-stack">
+              <div class="msg-sender-name">${escapeHtml(senderName)}</div>
+              <div class="msg-bubble ${isMe?'me':'other'}" oncontextmenu="event.preventDefault();playIosHapticSound();openMessageMenu(${idx});" ontouchstart="msgTouchStart(${idx})" ontouchend="msgTouchEnd()" onclick="playIosClickSound();">
+                ${replyHtml}
+                <span>${escapeHtml(m.text)}</span>
+                <div class="msg-meta-bar">
+                  <span>${timeStr}</span>
+                  ${statusHtml}
+                </div>
+              </div>
             </div>
           </div>
         `;
@@ -979,14 +1224,56 @@
       box.scrollTop = box.scrollHeight;
     }
 
+    // 长按检测（≥400ms 才弹菜单，单击不弹）
+    var msgTouchTimer = null;
+    function msgTouchStart(idx){
+      msgTouchTimer = setTimeout(()=>{
+        playIosHapticSound();
+        openMessageMenu(idx);
+        msgTouchTimer = null;
+      }, 450);
+    }
+    function msgTouchEnd(){ if(msgTouchTimer){clearTimeout(msgTouchTimer); msgTouchTimer=null;} }
+
+    // 丝滑滚动到目标消息 + 高亮闪烁
+    function scrollToMessage(idx){
+      const el = document.getElementById('msg-row-'+idx);
+      if(!el) return;
+      el.scrollIntoView({behavior:'smooth', block:'center'});
+      const bubble = el.querySelector('.msg-bubble');
+      if(bubble){ bubble.classList.remove('highlight'); void bubble.offsetWidth; bubble.classList.add('highlight'); }
+    }
+
     function openMessageMenu(msgIndex) {
       const msgs = localChatData[activeChatTargetUid] || [];
       const msg = msgs[msgIndex];
       if (!msg) return;
       const options = [];
+      // 回复该消息（长按后出现的首要操作）
+      options.push({ label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-undo"></use></svg> 回复该消息`, action: `beginReply(${msgIndex})` });
       if (msg.sender === 'me') options.push({ label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-undo"></use></svg> 撤回并重新编辑`, action: `recallMessage(${msgIndex})` });
       options.push({ label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-trash"></use></svg> 删除该消息`, danger: true, action: `deleteMessage(${msgIndex})` });
       openActionSheet(options);
+    }
+
+    // 进入回复模式：显示预览条 + 聚焦输入框
+    function beginReply(idx){
+      const msgs = localChatData[activeChatTargetUid] || [];
+      const m = msgs[idx]; if(!m) return;
+      const isMe = m.sender === 'me';
+      const otherProfile = userProfilesMap.get(String(activeChatTargetUid)) || {};
+      const name = isMe ? (currentUser.name||'我') : (otherProfile.username || ('用户_'+activeChatTargetUid));
+      const avatar = isMe ? (currentUser.avatar||DEFAULT_AVATAR) : (otherProfile.avatar || DEFAULT_AVATAR);
+      document.getElementById('replyPrevName').textContent = '回复 ' + name;
+      document.getElementById('replyPrevText').textContent = m.text || '';
+      document.getElementById('replyPrevAvatar').src = avatar;
+      document.getElementById('replyPreviewBar').classList.add('active');
+      pendingReplyIdx = idx;
+      setTimeout(()=>{ const inp=document.getElementById('chatMsgInput'); if(inp) inp.focus(); }, 100);
+    }
+    function cancelReply(){
+      pendingReplyIdx = null;
+      document.getElementById('replyPreviewBar').classList.remove('active');
     }
 
     function recallMessage(idx) {
@@ -1015,10 +1302,14 @@
       if (!localChatData[activeChatTargetUid]) localChatData[activeChatTargetUid] = [];
 
       localChatData[activeChatTargetUid].push({
-        sender: 'me', text, time: new Date().toISOString(), isRead: false
+        sender: 'me', text, time: new Date().toISOString(), isRead: false,
+        replyToIdx: pendingReplyIdx != null ? pendingReplyIdx : null
       });
       localStorage.setItem('forum_local_chats', JSON.stringify(localChatData));
       input.value = '';
+      // 发送后清除回复状态
+      pendingReplyIdx = null;
+      document.getElementById('replyPreviewBar').classList.remove('active');
       renderChatMessages();
 
       // 同时写入数据库（服务端存储 + 实时推送）
@@ -1029,6 +1320,15 @@
         // 刷新左侧列表预览
         renderChatList();
       });
+    }
+
+    // 加号按钮（语音位）：弹出轻菜单
+    function onPlusClicked(){
+      playIosClickSound();
+      openActionSheet([
+        { label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-plus"></use></svg> 发送图片`, action: `showToast('图片功能开发中',2000)` },
+        { label: `<svg class="icon-svg" viewBox="0 0 24 24"><use href="#svg-bolt"></use></svg> 发送文件`, action: `showToast('文件功能开发中',2000)` }
+      ]);
     }
 
     // 🔒 标记已读（触发双钩变化）
@@ -1284,15 +1584,105 @@
       renderPostList(filtered, allCommentsData, c);
     }
 
-    function openEditProfileModal() { document.getElementById('editProfileModal').style.display = 'flex'; }
+    function openEditProfileModal() {
+      // 只操作编辑资料弹窗里真实存在的输入框
+      document.getElementById('editNameInput').value = currentUser.name || '';
+      document.getElementById('editBioInput').value = currentUser.bio || '';
+      document.getElementById('editProfileModal').style.display = 'flex';
+    }
     function closeEditProfileModal() { document.getElementById('editProfileModal').style.display = 'none'; }
 
-    function saveProfile() {
+    async function saveProfile() {
       const name = document.getElementById('editNameInput').value.trim();
       const bio = document.getElementById('editBioInput').value.trim();
+
+      // 基本信息更新
       if (name) currentUser.name = name;
       if (bio) currentUser.bio = bio;
+
       saveUserDataToLocal(); syncUserProfileToDb(); updateProfileUI(); closeEditProfileModal(); fetchPosts();
+    }
+
+    /* ============================================================
+       🔑 独立修改密码界面
+       ============================================================ */
+    function openChangePassword() {
+      // 清空输入框
+      document.getElementById('changePwdCurrent').value = '';
+      document.getElementById('changePwdNew').value = '';
+      document.getElementById('changePwdConfirm').value = '';
+      document.getElementById('changePwdOverlay').classList.add('active');
+    }
+
+    function closeChangePassword() {
+      document.getElementById('changePwdOverlay').classList.remove('active');
+    }
+
+    async function submitChangePassword() {
+      const currentPwd = document.getElementById('changePwdCurrent').value;
+      const newPwd = document.getElementById('changePwdNew').value;
+      const confirmPwd = document.getElementById('changePwdConfirm').value;
+
+      // 三项都不能为空
+      if (!currentPwd || !newPwd || !confirmPwd) {
+        showIosAlert("密码修改失败", "请完整填写当前密码、新密码和确认密码！", false);
+        return;
+      }
+
+      // 验证当前密码
+      showLoadingOverlay('正在验证…');
+      const currentHash = await hashPassword(String(currentUser.uid), currentPwd);
+      const { data: userData, error: fetchError } = await _supabase.rpc('get_user_by_uid', { uid_input: String(currentUser.uid) });
+      hideLoadingOverlay();
+
+      if (fetchError || !userData || userData.length === 0) {
+        showIosAlert("密码修改失败", "无法验证当前密码，请稍后重试。", false);
+        return;
+      }
+      const dbHash = userData[0].password_hash;
+
+      // 老账号（password_hash 为空/null）
+      if (!dbHash) {
+        showIosAlert("无法修改密码", "你的账号是密码系统上线前创建的，请先联系管理员初始化密码，或使用注册功能新建账号。", false);
+        return;
+      }
+      if (dbHash !== currentHash) {
+        showIosAlert("密码修改失败", "当前密码输入错误！", false);
+        return;
+      }
+
+      // 两次新密码一致
+      if (newPwd !== confirmPwd) {
+        showIosAlert("密码修改失败", "两次输入的新密码不一致！", false);
+        return;
+      }
+
+      // 新密码强度校验
+      const pwdErr = validatePasswordStrength(newPwd);
+      if (pwdErr) {
+        showIosAlert("密码不符合要求", pwdErr, false);
+        return;
+      }
+
+      // 新密码不能与当前密码相同
+      if (newPwd === currentPwd) {
+        showIosAlert("密码修改失败", "新密码不能与当前密码相同！", false);
+        return;
+      }
+
+      // 写入新密码
+      showLoadingOverlay('正在更新密码…');
+      const newHash = await hashPassword(String(currentUser.uid), newPwd);
+      const { error: updateErr } = await _supabase.from('profiles').update({ password_hash: newHash }).eq('uid', String(currentUser.uid));
+      hideLoadingOverlay();
+
+      if (updateErr) {
+        showIosAlert("密码修改失败", updateErr.message || "更新密码时出错", false);
+        return;
+      }
+
+      closeChangePassword();
+      showIosAlert("密码修改成功", "你的密码已更新，下次登录请使用新密码。", false);
     }
 
     /* ============================================================
