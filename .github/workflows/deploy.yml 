@@ -2,40 +2,40 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches: ["main"]
+  workflow_dispatch:   # ← 这一行决定 "Run workflow" 按钮是否出现
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: 🔒 Inject Supabase Credentials
+      - name: Inject Supabase Config
         run: |
-          # 从 GitHub Secrets 读取（绝不明文存储）
-          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
-          SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
-
-          # 注入到 HTML 的 meta 标签中
-          sed -i "s|__SUPABASE_URL__|${SUPABASE_URL}|g" index.html
-          sed -i "s|__SUPABASE_ANON_KEY__|${SUPABASE_ANON_KEY}|g" index.html
+          sed -i "s|__SUPABASE_URL__|${{ secrets.supabase_url }}|g" index.html
+          sed -i "s|__SUPABASE_ANON_KEY__|${{ secrets.supabase_anon_key }}|g" index.html
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: "."
 
       - name: Deploy to GitHub Pages
         id: deployment
