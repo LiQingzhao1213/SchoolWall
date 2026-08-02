@@ -588,8 +588,8 @@
 
     // 如果密钥未被注入（本地开发或构建失败），立即阻断
     if (!SUPABASE_URL || !SUPABASE_KEY ||
-        SUPABASE_URL === 'https://nbldkyyqmnjeiwybihqy.supabase.co' ||
-        SUPABASE_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibGRreXlxbW5qZWl3eWJpaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODY0NDIsImV4cCI6MjEwMDg2MjQ0Mn0.UOwl033Ame7kMoo3aHqm44BW4IG4qHmtKDvh6DptPVs') {
+        SUPABASE_URL === '__SUPABASE_URL__' ||
+        SUPABASE_KEY === '__SUPABASE_ANON_KEY__') {
       console.error('[Security] Supabase 配置缺失，请通过 GitHub Secrets 注入 URL 和 Anon Key');
       document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;padding:20px;text-align:center;"><h2 style="color:#ff3b30;">⚠️ 安全配置缺失</h2><p style="color:#8e8e93;font-size:14px;">Supabase URL 和 Anon Key 未正确注入。<br>请在 GitHub Secrets 中配置后重新部署。</p></div>';
       return;
